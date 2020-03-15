@@ -3,7 +3,7 @@ load("@rules_java//java:defs.bzl", "java_binary", "java_library", "java_test")
 package(default_visibility = ["//visibility:public"])
 
 java_binary(
-    name = "server-runner",
+    name = "ServerRunner",
     srcs = ["src/main/java/sg/edu/ntu/nfs/ServerRunner.java"],
     main_class = "sg.edu.ntu.nfs.ServerRunner",
     deps = ["//:server",
@@ -11,7 +11,7 @@ java_binary(
 )
 
 java_binary(
-    name = "client-runner",
+    name = "ClientRunner",
     srcs = ["src/main/java/sg/edu/ntu/nfs/ClientRunner.java"],
     main_class = "sg.edu.ntu.nfs.ClientRunner",
     deps = ["//:client",
