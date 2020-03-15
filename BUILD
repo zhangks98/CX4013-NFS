@@ -32,5 +32,5 @@ java_library(
 
 java_library(
     name = "common",
-    srcs = glob(["src/main/java/sg/edu/ntu/nfs/common/*.java"]),
+    srcs = glob(["src/main/java/sg/edu/ntu/nfs/common/**/*.java"]),
 )
