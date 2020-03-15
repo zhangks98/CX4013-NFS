@@ -1,0 +1,17 @@
+*~
+bazel-*
+.bazelrc
+.idea
+.ijwb
+# Eclipse
+.project
+.classpath
+.settings/
+# Maven
+target/
+# OS Files
+Thumbs.db
+desktop.ini
+.DS_Store
+.Spotlight-V100
+.Trashes
