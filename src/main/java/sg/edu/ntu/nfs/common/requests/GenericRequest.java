@@ -9,15 +9,15 @@ import java.util.List;
 
 public class GenericRequest implements Request {
     private final RequestId id;
-    private final RequestName name;
+    private final RequestType name;
     private final int numParams;
     private List<Value> params;
 
-    protected GenericRequest(RequestName name, int numParams) {
+    protected GenericRequest(RequestType name, int numParams) {
         this(new RequestId(), name, numParams);
     }
 
-    protected GenericRequest(RequestId id, RequestName name, int numParams) {
+    protected GenericRequest(RequestId id, RequestType name, int numParams) {
         this.id = id;
         this.name = name;
         this.numParams = numParams;
@@ -29,6 +29,8 @@ public class GenericRequest implements Request {
     }
 
     protected void addParam(Value val) {
+        if (params.size() >= numParams)
+            throw new IllegalArgumentException(String.format("Parameter length exceeds %d", numParams));
         params.add(val);
     }
 
@@ -63,7 +65,7 @@ public class GenericRequest implements Request {
     }
 
     @Override
-    public RequestName getName() {
+    public RequestType getName() {
         return name;
     }
 }

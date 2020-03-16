@@ -6,14 +6,14 @@ import java.io.InvalidObjectException;
 import java.nio.ByteBuffer;
 
 public class RequestBuilder {
-    private static final RequestName[] REQUEST_NAMES = RequestName.values();
+    private static final RequestType[] REQUEST_NAMES = RequestType.values();
 
     public static Request parseFrom(ByteBuffer data) throws InvalidObjectException {
         RequestId id = new RequestId(data.getInt());
         int requestNameIndex = data.getInt();
-        if (requestNameIndex >= REQUEST_NAMES.length)
+        if (requestNameIndex < 0 || requestNameIndex >= REQUEST_NAMES.length)
             throw new InvalidObjectException("Unable to parse request: request name index out of bound.");
-        RequestName name = REQUEST_NAMES[requestNameIndex];
+        RequestType name = REQUEST_NAMES[requestNameIndex];
         int numParams = data.getInt();
         GenericRequest request;
         switch (name) {

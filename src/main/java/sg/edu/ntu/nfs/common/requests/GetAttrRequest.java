@@ -4,11 +4,11 @@ import sg.edu.ntu.nfs.common.values.Str;
 
 public class GetAttrRequest extends GenericRequest {
     public GetAttrRequest(RequestId id) {
-        super(id, RequestName.GETATTR, RequestName.GETATTR.numParams());
+        super(id, RequestType.GETATTR, RequestType.GETATTR.numParams());
     }
 
     public GetAttrRequest(String path) {
-        super(RequestName.GETATTR, RequestName.GETATTR.numParams());
+        super(RequestType.GETATTR, RequestType.GETATTR.numParams());
         addParam(new Str(path));
     }
 

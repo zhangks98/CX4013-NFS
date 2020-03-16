@@ -16,7 +16,7 @@ public interface Request extends Serializer {
      *
      * @return request name.
      */
-    RequestName getName();
+    RequestType getName();
 
     /**
      * Get total number of parameters

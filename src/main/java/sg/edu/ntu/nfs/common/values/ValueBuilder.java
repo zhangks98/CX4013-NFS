@@ -8,7 +8,7 @@ public class ValueBuilder {
 
     public static Value parseFrom(ByteBuffer data) throws InvalidObjectException {
         int valueTypeIndex = data.getInt();
-        if (valueTypeIndex >= VALUE_TYPES.length)
+        if (valueTypeIndex < 0 || valueTypeIndex >= VALUE_TYPES.length)
             throw new InvalidObjectException("Unable to parse value: value type index out of bound.");
         ValueType type = VALUE_TYPES[valueTypeIndex];
         switch (type) {

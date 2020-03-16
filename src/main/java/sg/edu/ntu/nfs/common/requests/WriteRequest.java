@@ -6,11 +6,11 @@ import sg.edu.ntu.nfs.common.values.Str;
 
 public class WriteRequest extends GenericRequest {
     public WriteRequest(RequestId id) {
-        super(id, RequestName.WRITE, RequestName.WRITE.numParams());
+        super(id, RequestType.WRITE, RequestType.WRITE.numParams());
     }
 
     public WriteRequest(String path, int offset, int count, byte[] data) {
-        super(RequestName.WRITE, RequestName.WRITE.numParams());
+        super(RequestType.WRITE, RequestType.WRITE.numParams());
         addParam(new Int32(offset));
         addParam(new Int32(count));
         addParam(new Str(path));

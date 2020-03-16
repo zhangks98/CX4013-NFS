@@ -5,11 +5,11 @@ import sg.edu.ntu.nfs.common.values.Str;
 
 public class ReadRequest extends GenericRequest {
     public ReadRequest(RequestId id) {
-        super(id, RequestName.READ, RequestName.READ.numParams());
+        super(id, RequestType.READ, RequestType.READ.numParams());
     }
 
     public ReadRequest(String path, int offset, int count) {
-        super(RequestName.READ, RequestName.READ.numParams());
+        super(RequestType.READ, RequestType.READ.numParams());
         addParam(new Int32(offset));
         addParam(new Int32(count));
         addParam(new Str(path));
