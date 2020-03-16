@@ -19,7 +19,7 @@ public class RequestTest {
     }
 
     @Test(expected = InvalidClassException.class)
-    public void shouldNotMarshallMismactedParam() throws InvalidClassException {
+    public void shouldNotMarshallMismatchedParam() throws InvalidClassException {
         GetAttrRequest expected = new GetAttrRequest("hello.txt");
         expected.addParam(new Int64(233L));
         byte[] serialized = expected.toBytes();
@@ -27,7 +27,7 @@ public class RequestTest {
     }
 
     @Test(expected = InvalidObjectException.class)
-    public void shouldNotUnmarshallMismactedParam() throws InvalidClassException, InvalidObjectException {
+    public void shouldNotUnmarshalMismatchedParam() throws InvalidClassException, InvalidObjectException {
         GetAttrRequest expected = new GetAttrRequest("hello.txt");
         ByteBuffer serialized = ByteBuffer.wrap(expected.toBytes());
         serialized.putInt(8, 2);
