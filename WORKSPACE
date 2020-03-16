@@ -15,6 +15,7 @@ load("@rules_jvm_external//:defs.bzl", "maven_install")
 maven_install(
     artifacts = [
         "junit:junit:4.12",
+        "org.hamcrest:hamcrest-library:1.3",
     ],
     repositories = [
         "https://jcenter.bintray.com/",

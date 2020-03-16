@@ -19,6 +19,14 @@ java_binary(
 )
 
 java_library(
+    name = "java_test_deps",
+    exports = [
+        "@maven//:junit_junit",
+        "@maven//:org_hamcrest_hamcrest_library",
+    ],
+)
+
+java_library(
     name = "server",
     srcs = glob(["src/main/java/sg/edu/ntu/nfs/server/*.java"]),
     deps = ["//:common"],

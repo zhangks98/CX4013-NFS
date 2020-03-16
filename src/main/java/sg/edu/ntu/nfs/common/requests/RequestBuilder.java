@@ -1,0 +1,45 @@
+package sg.edu.ntu.nfs.common.requests;
+
+import sg.edu.ntu.nfs.common.values.ValueBuilder;
+
+import java.io.InvalidObjectException;
+import java.nio.ByteBuffer;
+
+public class RequestBuilder {
+    private static final RequestName[] REQUEST_NAMES = RequestName.values();
+
+    public static Request parseFrom(ByteBuffer data) throws InvalidObjectException {
+        RequestId id = new RequestId(data.getInt());
+        int requestNameIndex = data.getInt();
+        if (requestNameIndex >= REQUEST_NAMES.length)
+            throw new InvalidObjectException("Unable to parse request: request name index out of bound.");
+        RequestName name = REQUEST_NAMES[requestNameIndex];
+        int numParams = data.getInt();
+        GenericRequest request;
+        switch (name) {
+            case EMPTY:
+                request = new EmptyRequest(id);
+                break;
+            case READ:
+                request = new ReadRequest(id);
+                break;
+            case WRITE:
+                request = new WriteRequest(id);
+                break;
+            case GETATTR:
+                request = new GetAttrRequest(id);
+                break;
+            default:
+                throw new InvalidObjectException("Unable to parse request: no matching request name");
+        }
+
+        if (numParams != request.getNumParams())
+            throw new InvalidObjectException(String.format(
+                    "Unable to parse request %s: wrong number of parameters. Expected: %d, Actual: %d .",
+                    name.name(), request.getNumParams(), numParams));
+        for (int i = 0; i < numParams; i++) {
+            request.addParam(ValueBuilder.parseFrom(data));
+        }
+        return request;
+    }
+}
