@@ -15,7 +15,7 @@ public class RequestBuilder {
             throw new InvalidObjectException("Unable to parse request: request name index out of bound.");
         RequestType name = REQUEST_NAMES[requestNameIndex];
         int numParams = data.getInt();
-        GenericRequest request;
+        AbstractRequest request;
         switch (name) {
             case EMPTY:
                 request = new EmptyRequest(id);

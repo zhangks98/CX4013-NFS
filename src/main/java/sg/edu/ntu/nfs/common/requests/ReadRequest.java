@@ -3,7 +3,7 @@ package sg.edu.ntu.nfs.common.requests;
 import sg.edu.ntu.nfs.common.values.Int32;
 import sg.edu.ntu.nfs.common.values.Str;
 
-public class ReadRequest extends GenericRequest {
+public class ReadRequest extends AbstractRequest {
     public ReadRequest(RequestId id) {
         super(id, RequestType.READ, RequestType.READ.numParams());
     }

@@ -4,7 +4,7 @@ import sg.edu.ntu.nfs.common.values.Bytes;
 import sg.edu.ntu.nfs.common.values.Int32;
 import sg.edu.ntu.nfs.common.values.Str;
 
-public class WriteRequest extends GenericRequest {
+public class WriteRequest extends AbstractRequest {
     public WriteRequest(RequestId id) {
         super(id, RequestType.WRITE, RequestType.WRITE.numParams());
     }

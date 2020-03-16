@@ -2,7 +2,7 @@ package sg.edu.ntu.nfs.common.requests;
 
 import sg.edu.ntu.nfs.common.values.Str;
 
-public class GetAttrRequest extends GenericRequest {
+public class GetAttrRequest extends AbstractRequest {
     public GetAttrRequest(RequestId id) {
         super(id, RequestType.GETATTR, RequestType.GETATTR.numParams());
     }

@@ -7,17 +7,17 @@ import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
 
-public class GenericRequest implements Request {
+public abstract class AbstractRequest implements Request {
     private final RequestId id;
     private final RequestType name;
     private final int numParams;
     private List<Value> params;
 
-    protected GenericRequest(RequestType name, int numParams) {
+    protected AbstractRequest(RequestType name, int numParams) {
         this(new RequestId(), name, numParams);
     }
 
-    protected GenericRequest(RequestId id, RequestType name, int numParams) {
+    protected AbstractRequest(RequestId id, RequestType name, int numParams) {
         this.id = id;
         this.name = name;
         this.numParams = numParams;
