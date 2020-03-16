@@ -12,12 +12,12 @@ public class RequestId {
         this.id = id;
     }
 
-    public int getId() {
-        return id;
-    }
-
     public static int getNextId() {
         return nextId;
+    }
+
+    public int getId() {
+        return id;
     }
 
     @Override

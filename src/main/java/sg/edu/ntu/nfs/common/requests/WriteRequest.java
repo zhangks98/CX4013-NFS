@@ -8,6 +8,7 @@ public class WriteRequest extends GenericRequest {
     public WriteRequest(RequestId id) {
         super(id, RequestName.WRITE, RequestName.WRITE.numParams());
     }
+
     public WriteRequest(String path, int offset, int count, byte[] data) {
         super(RequestName.WRITE, RequestName.WRITE.numParams());
         addParam(new Int32(offset));
