@@ -5,11 +5,11 @@ import sg.edu.ntu.nfs.common.values.Str;
 
 public class ReadRequest extends AbstractRequest {
     public ReadRequest(RequestId id) {
-        super(id, RequestType.READ, RequestType.READ.numParams());
+        super(id, RequestName.READ, RequestName.READ.numParams());
     }
 
     public ReadRequest(String path, int offset, int count) {
-        super(RequestType.READ, RequestType.READ.numParams());
+        super(RequestName.READ, RequestName.READ.numParams());
         addParam(new Int32(offset));
         addParam(new Int32(count));
         addParam(new Str(path));

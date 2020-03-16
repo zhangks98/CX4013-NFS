@@ -1,6 +1,6 @@
 package sg.edu.ntu.nfs.common.requests;
 
-public enum RequestType {
+public enum RequestName {
     EMPTY(0),
     READ(3),
     WRITE(4),
@@ -8,7 +8,7 @@ public enum RequestType {
 
     private final int numParams;
 
-    RequestType(int numParams) {
+    RequestName(int numParams) {
         this.numParams = numParams;
     }
 

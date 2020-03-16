@@ -9,15 +9,15 @@ import java.util.List;
 
 public abstract class AbstractRequest implements Request {
     private final RequestId id;
-    private final RequestType name;
+    private final RequestName name;
     private final int numParams;
     private List<Value> params;
 
-    protected AbstractRequest(RequestType name, int numParams) {
+    protected AbstractRequest(RequestName name, int numParams) {
         this(new RequestId(), name, numParams);
     }
 
-    protected AbstractRequest(RequestId id, RequestType name, int numParams) {
+    protected AbstractRequest(RequestId id, RequestName name, int numParams) {
         this.id = id;
         this.name = name;
         this.numParams = numParams;
@@ -65,7 +65,7 @@ public abstract class AbstractRequest implements Request {
     }
 
     @Override
-    public RequestType getName() {
+    public RequestName getName() {
         return name;
     }
 }
