@@ -1,7 +1,6 @@
 package sg.edu.ntu.nfs.common.requests;
 
 import org.junit.Test;
-import sg.edu.ntu.nfs.common.values.Int64;
 
 import java.io.InvalidClassException;
 import java.io.InvalidObjectException;
