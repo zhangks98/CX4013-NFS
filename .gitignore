@@ -1,8 +1,11 @@
 *~
 bazel-*
 .bazelrc
+# IntelliJ
 .idea
 .ijwb
+*.iml
+out/
 # Eclipse
 .project
 .classpath
