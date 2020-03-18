@@ -22,7 +22,7 @@ java_library(
     name = "java_test_deps",
     exports = [
         "@maven//:junit_junit",
-        "@maven//:org_hamcrest_hamcrest_library",
+        "@maven//:org_hamcrest_hamcrest_core",
     ],
 )
 
