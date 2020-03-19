@@ -24,7 +24,7 @@ public class Int64 implements Value {
         return ValueType.INT64;
     }
 
-    public long getVal() {
+    public Long getVal() {
         return val;
     }
 

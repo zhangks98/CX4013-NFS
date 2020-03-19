@@ -26,8 +26,20 @@ public class RequestBuilder {
             case WRITE:
                 request = new WriteRequest(id);
                 break;
-            case GETATTR:
+            case GET_ATTR:
                 request = new GetAttrRequest(id);
+                break;
+            case LIST_DIR:
+                request = new ListDirRequest(id);
+                break;
+            case TOUCH:
+                request = new TouchRequest(id);
+                break;
+            case REGISTER:
+                request = new RegisterRequest(id);
+                break;
+            case FILE_UPDATED:
+                request = new FileUpdatedRequest(id);
                 break;
             default:
                 throw new InvalidObjectException("Unable to parse request: no matching request name");
