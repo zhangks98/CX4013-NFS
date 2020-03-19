@@ -1,0 +1,36 @@
+subprojects {
+    apply plugin: 'java'
+    group = 'sg.edu.ntu'
+    version = '1.0'
+    repositories {
+        mavenCentral()
+    }
+    dependencies {
+        testImplementation "junit:junit:4.12"
+        testImplementation "org.hamcrest:hamcrest-core:1.3"
+    }
+    test {
+        useJUnit()
+        maxHeapSize = '1G'
+        testLogging {
+            outputs.upToDateWhen {false}
+            showStandardStreams = true
+        }
+    }
+}
+
+project(':server') {
+    apply plugin: 'application'
+    dependencies {
+        implementation project(':common')
+    }
+    mainClassName = 'sg.edu.ntu.nfs.server.ServerRunner'
+}
+
+project(':client') {
+    apply plugin: 'application'
+    dependencies {
+        implementation project(':common')
+    }
+    mainClassName = 'sg.edu.ntu.nfs.client.ClientRunner'
+}
