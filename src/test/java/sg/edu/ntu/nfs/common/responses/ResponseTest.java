@@ -33,7 +33,7 @@ public class ResponseTest {
         Response expected = new GenericResponse(ResponseStatus.OK, valueList);
         byte[] serialized = expected.toBytes();
         Response actual = ResponseBuilder.parseFrom(ByteBuffer.wrap(serialized));
-        assertEquals(1L, valueList.get(0).getVal());
-        assertEquals(2, valueList.get(1).getVal());
+        assertEquals(1L, (long) valueList.get(0).getVal());
+        assertEquals(2, (int) valueList.get(1).getVal());
     }
 }
