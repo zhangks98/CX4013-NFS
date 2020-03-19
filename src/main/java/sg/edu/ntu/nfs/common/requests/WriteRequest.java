@@ -6,11 +6,18 @@ import sg.edu.ntu.nfs.common.values.Str;
 
 public class WriteRequest extends AbstractRequest {
     public WriteRequest(RequestId id) {
-        super(id, RequestName.WRITE, RequestName.WRITE.numParams());
+        super(id, RequestName.WRITE);
     }
 
+    /**
+     * Write count number of bytes to file starting at offset.
+     * @param path the file path.
+     * @param offset the starting point to write data.
+     * @param count the number of bytes to write.
+     * @param data the data to write.
+     */
     public WriteRequest(String path, int offset, int count, byte[] data) {
-        super(RequestName.WRITE, RequestName.WRITE.numParams());
+        super(RequestName.WRITE);
         addParam(new Int32(offset));
         addParam(new Int32(count));
         addParam(new Str(path));
@@ -18,7 +25,7 @@ public class WriteRequest extends AbstractRequest {
     }
 
     public String getPath() {
-        return ((Str) getParam(2)).getVal();
+        return (String) getParam(2).getVal();
     }
 
     public void setPath(String path) {
@@ -26,7 +33,7 @@ public class WriteRequest extends AbstractRequest {
     }
 
     public int getOffset() {
-        return ((Int32) getParam(0)).getVal();
+        return (int) getParam(0).getVal();
     }
 
     public void setOffset(int offset) {
@@ -34,7 +41,7 @@ public class WriteRequest extends AbstractRequest {
     }
 
     public int getCount() {
-        return ((Int32) getParam(1)).getVal();
+        return (int) getParam(1).getVal();
     }
 
     public void setCount(int count) {
@@ -42,7 +49,7 @@ public class WriteRequest extends AbstractRequest {
     }
 
     public byte[] getData() {
-        return ((Bytes) getParam(3)).getVal();
+        return (byte[]) getParam(3).getVal();
     }
 
     public void setData(byte[] data) {

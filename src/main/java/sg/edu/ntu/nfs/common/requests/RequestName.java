@@ -4,7 +4,11 @@ public enum RequestName {
     EMPTY(0),
     READ(3),
     WRITE(4),
-    GETATTR(1);
+    GET_ATTR(1),
+    LIST_DIR(1),
+    TOUCH(1),
+    REGISTER(2),
+    FILE_UPDATED(2);
 
     private final int numParams;
 

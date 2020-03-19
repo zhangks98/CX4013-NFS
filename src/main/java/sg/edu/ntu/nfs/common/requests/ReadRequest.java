@@ -4,19 +4,25 @@ import sg.edu.ntu.nfs.common.values.Int32;
 import sg.edu.ntu.nfs.common.values.Str;
 
 public class ReadRequest extends AbstractRequest {
-    public ReadRequest(RequestId id) {
-        super(id, RequestName.READ, RequestName.READ.numParams());
+    ReadRequest(RequestId id) {
+        super(id, RequestName.READ);
     }
 
+    /**
+     * Read the file from specified path starting at offset and read for count bytes
+     * @param path the file path.
+     * @param offset where to start reading.
+     * @param count the number of bytes to read.
+     */
     public ReadRequest(String path, int offset, int count) {
-        super(RequestName.READ, RequestName.READ.numParams());
+        super(RequestName.READ);
         addParam(new Int32(offset));
         addParam(new Int32(count));
         addParam(new Str(path));
     }
 
     public String getPath() {
-        return ((Str) getParam(2)).getVal();
+        return (String) getParam(2).getVal();
     }
 
     public void setPath(String path) {
@@ -24,7 +30,7 @@ public class ReadRequest extends AbstractRequest {
     }
 
     public int getOffset() {
-        return ((Int32) getParam(0)).getVal();
+        return (int) getParam(0).getVal();
     }
 
     public void setOffset(int offset) {
@@ -32,7 +38,7 @@ public class ReadRequest extends AbstractRequest {
     }
 
     public int getCount() {
-        return ((Int32) getParam(1)).getVal();
+        return (int) getParam(1).getVal();
     }
 
     public void setCount(int count) {

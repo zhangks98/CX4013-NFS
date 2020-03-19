@@ -11,9 +11,16 @@ public interface Value extends Serializer {
     int size();
 
     /**
-     * Get the type of the value.
+     * Get the type of the underlying value.
      *
      * @return value type.
      */
     ValueType getType();
+
+    /**
+     * Get the underlying value.
+     *
+     * @return value type.
+     */
+    Object getVal();
 }
