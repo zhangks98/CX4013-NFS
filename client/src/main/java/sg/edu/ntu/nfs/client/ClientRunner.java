@@ -1,6 +1,6 @@
-package sg.edu.ntu.nfs;
+package sg.edu.ntu.nfs.client;
 
-public class ServerRunner {
+public class ClientRunner {
     public static void main(String[] args) {
         System.out.println("Hello, World!");
     }
