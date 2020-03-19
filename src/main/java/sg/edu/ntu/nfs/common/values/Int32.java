@@ -24,7 +24,8 @@ public class Int32 implements Value {
         return ValueType.INT32;
     }
 
-    public int getVal() {
+    @Override
+    public Integer getVal() {
         return val;
     }
 

@@ -2,17 +2,17 @@ package sg.edu.ntu.nfs.common.requests;
 
 import sg.edu.ntu.nfs.common.values.Str;
 
-public class GetAttrRequest extends AbstractRequest {
-    GetAttrRequest(RequestId id) {
-        super(id, RequestName.GET_ATTR);
+public class TouchRequest extends AbstractRequest {
+    TouchRequest(RequestId id) {
+        super(id, RequestName.TOUCH);
     }
 
     /**
-     * Get the status of the file, including the access time and modified time.
+     * Create a new file or change its access time to now.
      * @param path the file path.
      */
-    public GetAttrRequest(String path) {
-        super(RequestName.GET_ATTR);
+    public TouchRequest(String path) {
+        super(RequestName.TOUCH);
         addParam(new Str(path));
     }
 
@@ -23,5 +23,4 @@ public class GetAttrRequest extends AbstractRequest {
     public void setPath(String path) {
         setParam(0, new Str(path));
     }
-
 }

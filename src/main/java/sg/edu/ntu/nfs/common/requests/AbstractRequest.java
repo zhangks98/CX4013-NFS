@@ -7,34 +7,34 @@ import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
 
-public abstract class AbstractRequest implements Request {
+abstract class AbstractRequest implements Request {
     private final RequestId id;
     private final RequestName name;
     private final int numParams;
     private List<Value> params;
 
-    protected AbstractRequest(RequestName name, int numParams) {
-        this(new RequestId(), name, numParams);
+    AbstractRequest(RequestName name) {
+        this(new RequestId(), name);
     }
 
-    protected AbstractRequest(RequestId id, RequestName name, int numParams) {
+    AbstractRequest(RequestId id, RequestName name) {
         this.id = id;
         this.name = name;
-        this.numParams = numParams;
+        this.numParams = name.numParams();
         this.params = new ArrayList<>(numParams);
     }
 
-    protected Value getParam(int pos) {
+    Value getParam(int pos) {
         return params.get(pos);
     }
 
-    protected void addParam(Value val) {
+    void addParam(Value val) {
         if (params.size() >= numParams)
             throw new IllegalArgumentException(String.format("Parameter length exceeds %d", numParams));
         params.add(val);
     }
 
-    protected void setParam(int pos, Value val) {
+    void setParam(int pos, Value val) {
         params.set(pos, val);
     }
 

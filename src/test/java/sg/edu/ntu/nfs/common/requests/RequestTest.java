@@ -44,33 +44,92 @@ public class RequestTest {
 
     @Test
     public void marshallGetAttrRequest() throws InvalidClassException, InvalidObjectException {
-        GetAttrRequest expected = new GetAttrRequest("hello.txt");
+        String path = "hello.txt";
+        GetAttrRequest expected = new GetAttrRequest(path);
         byte[] serialized = expected.toBytes();
         GetAttrRequest actual = (GetAttrRequest) RequestBuilder.parseFrom(ByteBuffer.wrap(serialized));
         assertEquals(expected.getId(), actual.getId());
-        assertEquals(expected.getPath(), actual.getPath());
+        assertEquals(RequestName.GET_ATTR, actual.getName());
+        assertEquals(path, actual.getPath());
     }
 
     @Test
     public void marshallReadRequest() throws InvalidClassException, InvalidObjectException {
-        ReadRequest expected = new ReadRequest("world.txt", 1, 2);
+        String path = "world.txt";
+        int offset = 1;
+        int count = 2;
+        ReadRequest expected = new ReadRequest(path, offset, count);
         byte[] serialized = expected.toBytes();
         ReadRequest actual = (ReadRequest) RequestBuilder.parseFrom(ByteBuffer.wrap(serialized));
         assertEquals(expected.getId(), actual.getId());
-        assertEquals(expected.getPath(), actual.getPath());
-        assertEquals(expected.getOffset(), actual.getOffset());
-        assertEquals(expected.getCount(), actual.getCount());
+        assertEquals(RequestName.READ, actual.getName());
+        assertEquals(path, actual.getPath());
+        assertEquals(offset, actual.getOffset());
+        assertEquals(count, actual.getCount());
     }
 
     @Test
     public void marshallWriteRequest() throws InvalidClassException, InvalidObjectException {
-        WriteRequest expected = new WriteRequest("abc.txt", 1, 2, new byte[]{0xd, 0xe, 0xf});
+        String path = "abc.txt";
+        int offset = 1;
+        int count = 2;
+        byte[] data = new byte[]{0xd, 0xe, 0xf};
+        WriteRequest expected = new WriteRequest(path, offset, count, data);
         byte[] serialized = expected.toBytes();
         WriteRequest actual = (WriteRequest) RequestBuilder.parseFrom(ByteBuffer.wrap(serialized));
         assertEquals(expected.getId(), actual.getId());
-        assertEquals(expected.getPath(), actual.getPath());
-        assertEquals(expected.getOffset(), actual.getOffset());
-        assertEquals(expected.getCount(), actual.getCount());
-        assertArrayEquals(expected.getData(), actual.getData());
+        assertEquals(RequestName.WRITE, actual.getName());
+        assertEquals(path, actual.getPath());
+        assertEquals(offset, actual.getOffset());
+        assertEquals(count, actual.getCount());
+        assertArrayEquals(data, actual.getData());
+    }
+
+    @Test
+    public void marshallListDirRequest() throws InvalidClassException, InvalidObjectException {
+        String path = "/src/test";
+        ListDirRequest expected = new ListDirRequest(path);
+        byte[] serialized = expected.toBytes();
+        ListDirRequest actual = (ListDirRequest) RequestBuilder.parseFrom(ByteBuffer.wrap(serialized));
+        assertEquals(expected.getId(), actual.getId());
+        assertEquals(RequestName.LIST_DIR, actual.getName());
+        assertEquals(path, actual.getPath());
+    }
+
+    @Test
+    public void marshallTouchRequest() throws InvalidClassException, InvalidObjectException {
+        String path = "test.txt";
+        TouchRequest expected = new TouchRequest("test.txt");
+        byte[] serialized = expected.toBytes();
+        TouchRequest actual = (TouchRequest) RequestBuilder.parseFrom(ByteBuffer.wrap(serialized));
+        assertEquals(expected.getId(), actual.getId());
+        assertEquals(RequestName.TOUCH, actual.getName());
+        assertEquals(path, actual.getPath());
+    }
+
+    @Test
+    public void marshallRegisterRequest() throws InvalidClassException, InvalidObjectException {
+        String path = "test.txt";
+        int monitorInterval = 100;
+        RegisterRequest expected = new RegisterRequest(path, monitorInterval);
+        byte[] serialized = expected.toBytes();
+        RegisterRequest actual = (RegisterRequest) RequestBuilder.parseFrom(ByteBuffer.wrap(serialized));
+        assertEquals(expected.getId(), actual.getId());
+        assertEquals(RequestName.REGISTER, actual.getName());
+        assertEquals(path, actual.getPath());
+        assertEquals(monitorInterval, actual.getMonitorInterval());
+    }
+
+    @Test
+    public void marshallFileUpdatedRequest() throws InvalidClassException, InvalidObjectException {
+        String path = "test.txt";
+        byte[] data = new byte[]{(byte) 0xdd, (byte) 0xee, (byte) 0xff};
+        FileUpdatedRequest expected = new FileUpdatedRequest(path, data);
+        byte[] serialized = expected.toBytes();
+        FileUpdatedRequest actual = (FileUpdatedRequest) RequestBuilder.parseFrom(ByteBuffer.wrap(serialized));
+        assertEquals(expected.getId(), actual.getId());
+        assertEquals(RequestName.FILE_UPDATED, actual.getName());
+        assertEquals(path, actual.getPath());
+        assertArrayEquals(data, actual.getData());
     }
 }
