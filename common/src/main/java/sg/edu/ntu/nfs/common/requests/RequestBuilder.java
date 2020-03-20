@@ -8,13 +8,14 @@ import java.nio.ByteBuffer;
 public class RequestBuilder {
     private static final RequestName[] REQUEST_NAMES = RequestName.values();
 
-    public static Request parseFrom(ByteBuffer data) throws InvalidObjectException {
-        RequestId id = new RequestId(data.getInt());
-        int requestNameIndex = data.getInt();
+    public static Request parseFrom(byte[] data) throws InvalidObjectException {
+        ByteBuffer buf = ByteBuffer.wrap(data);
+        RequestId id = new RequestId(buf.getInt());
+        int requestNameIndex = buf.getInt();
         if (requestNameIndex < 0 || requestNameIndex >= REQUEST_NAMES.length)
             throw new InvalidObjectException("Unable to parse request: request name index out of bound.");
         RequestName name = REQUEST_NAMES[requestNameIndex];
-        int numParams = data.getInt();
+        int numParams = buf.getInt();
         AbstractRequest request;
         switch (name) {
             case EMPTY:
@@ -50,7 +51,7 @@ public class RequestBuilder {
                     "Unable to parse request %s: wrong number of parameters. Expected: %d, Actual: %d .",
                     name.name(), request.getNumParams(), numParams));
         for (int i = 0; i < numParams; i++) {
-            request.addParam(ValueBuilder.parseFrom(data));
+            request.addParam(ValueBuilder.parseFrom(buf));
         }
         return request;
     }
