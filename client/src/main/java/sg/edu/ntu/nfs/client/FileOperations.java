@@ -10,6 +10,8 @@ public class FileOperations {
     }
 
     public void write(String file_path, int offset, String data){
+        // send request
+        // then write file
         byte[] file = cache_handler.get_cached_file(file_path);
         // TODO: write
         byte[] new_file = file;

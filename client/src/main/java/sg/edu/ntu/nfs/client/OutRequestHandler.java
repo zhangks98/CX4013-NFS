@@ -1,9 +1,22 @@
 package sg.edu.ntu.nfs.client;
 
+import sg.edu.ntu.nfs.common.requests.ListDirRequest;
+import sg.edu.ntu.nfs.common.requests.Request;
+import sg.edu.ntu.nfs.common.responses.Response;
+
+import javax.imageio.IIOException;
+import java.io.IOException;
+import java.net.InetAddress;
+import java.net.SocketException;
 import java.util.ArrayList;
 
 public class OutRequestHandler {
+    private static Proxy stub;
     public OutRequestHandler(){}
+
+    public void set_proxy(InetAddress address, int port) throws SocketException {
+        this.stub = new Proxy(address, port);
+    }
 
     public byte[] requestFile(String file_path){
         //TODO: send request
@@ -23,8 +36,10 @@ public class OutRequestHandler {
         return response;
     }
 
-    public int listDir(String dir){
-        // TODO: request
+    public int listDir(String dir) throws IOException {
+        ListDirRequest req = new ListDirRequest(dir);
+        Response res = stub.invoke(req);
+        // TODO: handle the response
         return 0;
     }
 
