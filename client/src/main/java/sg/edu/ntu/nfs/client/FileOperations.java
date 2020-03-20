@@ -1,8 +1,10 @@
 package sg.edu.ntu.nfs.client;
 
 public class FileOperations {
-    public FileOperations(){ }
-    CacheHandler cache_handler = new CacheHandler();
+    private final CacheHandler cache_handler;
+    public FileOperations(CacheHandler cache_handler){
+        this.cache_handler = cache_handler;
+    }
 
     public void read(String file_path, int offset, int count){
         byte[] file = cache_handler.get_cached_file(file_path);

@@ -2,10 +2,10 @@ package sg.edu.ntu.nfs.client;
 
 public class CacheHandler {
     static Cache cache = new Cache(); // only one instance used throughout
-    OutRequestHandler out_req_handler = new OutRequestHandler();
+    private final Proxy stub;
 
-    public CacheHandler(){}
-    public CacheHandler(long fresh_t){
+    public CacheHandler(Proxy stub, long fresh_t){
+        this.stub = stub;
         cache.setFreshT(fresh_t);
     }
 
@@ -19,7 +19,7 @@ public class CacheHandler {
         CacheEntry entry = cache.getFile(file_path);
         // not in cache
         if (entry == null){
-            byte[] file_content = out_req_handler.requestFile(file_path);
+            byte[] file_content = stub.requestFile(file_path);
             // file found on server
             if(file_content != null){
                 long t_mclient = System.currentTimeMillis();
@@ -34,11 +34,11 @@ public class CacheHandler {
             // check freshness upon access
             if(System.currentTimeMillis() - entry.getTc() < cache.getFreshT()){
                 // get t_mserver
-                long[] attr = out_req_handler.getattr((file_path));
+                long[] attr = stub.getattr((file_path));
                 // invalid entry
                 if(entry.getTmclient() < attr[0]){  // TODO: allow a small difference
                     // update entry
-                    byte[] file_content = out_req_handler.requestFile(file_path);
+                    byte[] file_content = stub.requestFile(file_path);
                     // file still on server
                     if(file_content != null){
                         long t_mclient = System.currentTimeMillis();
@@ -65,7 +65,7 @@ public class CacheHandler {
      * @param new_content new file content
      */
     public int update_cached_file(String file_path, byte[] new_content){
-        int response = out_req_handler.updateFile(file_path, new_content);
+        int response = stub.updateFile(file_path, new_content);
         // if write to sever was successful
         long t_mclient = System.currentTimeMillis();
         long t_c = System.currentTimeMillis();

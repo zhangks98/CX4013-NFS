@@ -3,10 +3,6 @@ package sg.edu.ntu.nfs.client;
 import picocli.CommandLine;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Parameters;
-import sg.edu.ntu.nfs.common.requests.ListDirRequest;
-import sg.edu.ntu.nfs.common.responses.Response;
-import sg.edu.ntu.nfs.common.responses.ResponseStatus;
-import sg.edu.ntu.nfs.common.values.Value;
 
 import java.net.InetAddress;
 import java.util.Scanner;
@@ -31,10 +27,9 @@ public class ClientRunner implements Callable<Integer> {
                     + "| touch [new_file_path]                   |\n"
                     + "| ls [dir]                                |";
 
-    FileOperations file_op = new FileOperations();
-    OutRequestHandler out_req_handler = new OutRequestHandler();
-    // init cache with freshness interval
-    CacheHandler cache_handler = new CacheHandler(1000);
+    FileOperations file_op;
+    Proxy stub;
+    CacheHandler cache_handler;
 
     public boolean contains_num(String str_input){
         try{
@@ -92,17 +87,17 @@ public class ClientRunner implements Callable<Integer> {
         else if (command[0].equals("touch")){
             valid = validate_length(command, 2);
             if(valid)
-                out_req_handler.requestTouch(command[1]);
+                stub.requestTouch(command[1]);
         }
         else if (command[0].equals("ls")){
             valid = validate_length(command, 2);
             if(valid)
-                out_req_handler.listDir(command[1]);
+                stub.listDir(command[1]);
         }
         else if (command[0].equals("register")){
             valid = validate_length(command, 2);
             if(valid)
-                out_req_handler.register(command[1]);
+                stub.register(command[1]);
         }
         else{
             System.out.println("Invalid commands, please try again");
@@ -116,22 +111,15 @@ public class ClientRunner implements Callable<Integer> {
 
     @Override
     public Integer call() throws Exception {
-        //Proxy stub = new Proxy(address, port);
-        out_req_handler.set_proxy(address, port);
-
+        stub = new Proxy(address, port);
+        // init cache with freshness interval.
+        cache_handler = new CacheHandler(stub, 1000);
+        file_op = new FileOperations(cache_handler);
+        
         System.out.println(this.interface_msg);
         String user_input = sc.nextLine();
         String[] split_input = user_input.trim().split(" ");
         processCommand(split_input);
-        /*
-        Response res = stub.invoke(new ListDirRequest(""));
-        if (res.getStatus() == ResponseStatus.OK) {
-            for (Value val : res.getValues()) {
-                String filename = (String) val.getVal();
-                System.out.println(filename);
-            }
-        }
-         */
         return 0;
     }
 }
