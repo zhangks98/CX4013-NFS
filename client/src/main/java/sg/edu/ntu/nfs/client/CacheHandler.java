@@ -2,7 +2,7 @@ package sg.edu.ntu.nfs.client;
 
 public class CacheHandler {
     static Cache cache = new Cache(); // only one instance used throughout
-    OutRequestHandler out_req_handler = new OutRequestHandler();
+    OutRequestHandler out_req_handler = new OutRequestHandler(stub);
 
     public CacheHandler(){}
     public CacheHandler(long fresh_t){

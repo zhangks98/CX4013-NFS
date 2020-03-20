@@ -65,12 +65,15 @@ public class ServerRunner implements Callable<Integer> {
             DatagramPacket request = new DatagramPacket(new byte[BUF_SIZE], BUF_SIZE);
             socket.receive(request);
 
+            // Unmarshal the request.
             Request req = RequestBuilder.parseFrom(request.getData());
             Context ctx = new Context(request.getAddress(), request.getPort());
             logger.info(String.format("Received: %s", req.getName()));
 
             try {
+                // Handle the request.
                 Response res = servicer.handle(req, ctx);
+                // Marshall the response and send to client.
                 DatagramPacket response = new DatagramPacket(res.toBytes(), BUF_SIZE,
                         ctx.getAddress(), ctx.getPort());
                 socket.send(response);

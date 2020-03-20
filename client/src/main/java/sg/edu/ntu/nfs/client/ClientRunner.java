@@ -27,14 +27,9 @@ public class ClientRunner implements Callable<Integer> {
 
     @Override
     public Integer call() throws Exception {
+        // Put your main function here.
         Proxy stub = new Proxy(address, port);
-        Response res = stub.invoke(new ListDirRequest(""));
-        if (res.getStatus() == ResponseStatus.OK) {
-            for (Value val : res.getValues()) {
-                String filename = (String) val.getVal();
-                System.out.println(filename);
-            }
-        }
+        OutRequestHandler handler = new OutRequestHandler(stub);
         return 0;
     }
 }
