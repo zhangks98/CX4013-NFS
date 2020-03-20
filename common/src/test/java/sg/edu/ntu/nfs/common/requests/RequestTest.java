@@ -29,14 +29,14 @@ public class RequestTest {
         ByteBuffer serialized = ByteBuffer.wrap(expected.toBytes());
         // Sets numParams to 2 in serialized message.
         serialized.putInt(8, 2);
-        GetAttrRequest actual = (GetAttrRequest) RequestBuilder.parseFrom(serialized);
+        GetAttrRequest actual = (GetAttrRequest) RequestBuilder.parseFrom(serialized.array());
     }
 
     @Test
     public void marshallEmptyRequest() throws InvalidClassException, InvalidObjectException {
         Request expected = new EmptyRequest();
         byte[] serialized = expected.toBytes();
-        Request actual = RequestBuilder.parseFrom(ByteBuffer.wrap(serialized));
+        Request actual = RequestBuilder.parseFrom(serialized);
         assertEquals(expected.getId(), actual.getId());
         assertEquals(expected.getName(), actual.getName());
         assertEquals(0, actual.getNumParams());
@@ -47,7 +47,7 @@ public class RequestTest {
         String path = "hello.txt";
         GetAttrRequest expected = new GetAttrRequest(path);
         byte[] serialized = expected.toBytes();
-        GetAttrRequest actual = (GetAttrRequest) RequestBuilder.parseFrom(ByteBuffer.wrap(serialized));
+        GetAttrRequest actual = (GetAttrRequest) RequestBuilder.parseFrom(serialized);
         assertEquals(expected.getId(), actual.getId());
         assertEquals(RequestName.GET_ATTR, actual.getName());
         assertEquals(path, actual.getPath());
@@ -60,7 +60,7 @@ public class RequestTest {
         int count = 2;
         ReadRequest expected = new ReadRequest(path, offset, count);
         byte[] serialized = expected.toBytes();
-        ReadRequest actual = (ReadRequest) RequestBuilder.parseFrom(ByteBuffer.wrap(serialized));
+        ReadRequest actual = (ReadRequest) RequestBuilder.parseFrom(serialized);
         assertEquals(expected.getId(), actual.getId());
         assertEquals(RequestName.READ, actual.getName());
         assertEquals(path, actual.getPath());
@@ -76,7 +76,7 @@ public class RequestTest {
         byte[] data = new byte[]{0xd, 0xe, 0xf};
         WriteRequest expected = new WriteRequest(path, offset, count, data);
         byte[] serialized = expected.toBytes();
-        WriteRequest actual = (WriteRequest) RequestBuilder.parseFrom(ByteBuffer.wrap(serialized));
+        WriteRequest actual = (WriteRequest) RequestBuilder.parseFrom(serialized);
         assertEquals(expected.getId(), actual.getId());
         assertEquals(RequestName.WRITE, actual.getName());
         assertEquals(path, actual.getPath());
@@ -90,7 +90,7 @@ public class RequestTest {
         String path = "/src/test";
         ListDirRequest expected = new ListDirRequest(path);
         byte[] serialized = expected.toBytes();
-        ListDirRequest actual = (ListDirRequest) RequestBuilder.parseFrom(ByteBuffer.wrap(serialized));
+        ListDirRequest actual = (ListDirRequest) RequestBuilder.parseFrom(serialized);
         assertEquals(expected.getId(), actual.getId());
         assertEquals(RequestName.LIST_DIR, actual.getName());
         assertEquals(path, actual.getPath());
@@ -101,7 +101,7 @@ public class RequestTest {
         String path = "test.txt";
         TouchRequest expected = new TouchRequest("test.txt");
         byte[] serialized = expected.toBytes();
-        TouchRequest actual = (TouchRequest) RequestBuilder.parseFrom(ByteBuffer.wrap(serialized));
+        TouchRequest actual = (TouchRequest) RequestBuilder.parseFrom(serialized);
         assertEquals(expected.getId(), actual.getId());
         assertEquals(RequestName.TOUCH, actual.getName());
         assertEquals(path, actual.getPath());
@@ -113,7 +113,7 @@ public class RequestTest {
         int monitorInterval = 100;
         RegisterRequest expected = new RegisterRequest(path, monitorInterval);
         byte[] serialized = expected.toBytes();
-        RegisterRequest actual = (RegisterRequest) RequestBuilder.parseFrom(ByteBuffer.wrap(serialized));
+        RegisterRequest actual = (RegisterRequest) RequestBuilder.parseFrom(serialized);
         assertEquals(expected.getId(), actual.getId());
         assertEquals(RequestName.REGISTER, actual.getName());
         assertEquals(path, actual.getPath());
@@ -126,7 +126,7 @@ public class RequestTest {
         byte[] data = new byte[]{(byte) 0xdd, (byte) 0xee, (byte) 0xff};
         FileUpdatedRequest expected = new FileUpdatedRequest(path, data);
         byte[] serialized = expected.toBytes();
-        FileUpdatedRequest actual = (FileUpdatedRequest) RequestBuilder.parseFrom(ByteBuffer.wrap(serialized));
+        FileUpdatedRequest actual = (FileUpdatedRequest) RequestBuilder.parseFrom(serialized);
         assertEquals(expected.getId(), actual.getId());
         assertEquals(RequestName.FILE_UPDATED, actual.getName());
         assertEquals(path, actual.getPath());
