@@ -26,7 +26,6 @@ public class Proxy {
         this.socket = new DatagramSocket();
     }
 
-
     public byte[] requestFile(String file_path) {
         try{
             Response res = invoke(new ReadRequest(file_path, 0, 0));
@@ -40,30 +39,32 @@ public class Proxy {
         return null;
     }
 
-    public int write(String file_path, int offset, int count, byte[] data) {
+    public void write(String file_path, int offset, int count, byte[] data) {
         try{
             Response res = invoke(new WriteRequest(file_path, offset, count, data));
             if (res.getStatus() == ResponseStatus.OK){
                 int num_bytes_written = (int) res.getValues().get(0).getVal();
-                return num_bytes_written;
+                System.out.println(num_bytes_written + " bytes written to " + file_path);
+            }else{
+                System.out.println("Error write");
             }
         }catch (IOException ex){
             logger.warn("Error write", ex);
         }
-        return -1;
     }
 
-    public long touch(String file_path) {
+    public void touch(String file_path) {
         try{
             Response res = invoke(new TouchRequest(file_path));
             if (res.getStatus() == ResponseStatus.OK) {
                 long atime = (long) res.getValues().get(0).getVal();
-                return atime;
+                System.out.println(file_path + "   Last accessed at: " + atime);
+            }else{
+                System.out.println("Error touch");
             }
         }catch (IOException ex){
             logger.warn("Error touch", ex);
         }
-        return -1;
     }
 
     public void listDir(String dir) {
@@ -80,16 +81,17 @@ public class Proxy {
         }
     }
 
-    public int register(String file_path, int monitor_interval) {
+    public void register(String file_path, int monitor_interval) {
         try{
             Response res = invoke(new RegisterRequest(file_path, monitor_interval));
             if (res.getStatus() == ResponseStatus.OK){
-                return 0;
+                System.out.println("Successfully registered");
+            }else{
+                System.out.println("Error register");
             }
         }catch (IOException ex){
             logger.warn("Error register", ex);
         }
-        return -1;
     }
 
     public long[] getattr(String file_path) {
