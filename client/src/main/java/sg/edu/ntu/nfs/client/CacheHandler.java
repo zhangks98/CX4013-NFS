@@ -34,11 +34,11 @@ public class CacheHandler {
         // in cache
         else{
             // check freshness upon access
-            if(System.currentTimeMillis() - entry.getTc() < cache.getFreshT()){
-                // get t_mserver
+            if(System.currentTimeMillis() - entry.getTc() >= cache.getFreshT()){
                 long[] attr = stub.getattr((file_path));
+                long t_mserver = attr[0];
                 // invalid entry
-                if(entry.getTmclient() < attr[0]){  // TODO: allow a small difference
+                if(entry.getTmclient() < t_mserver){
                     // update entry
                     byte[] file_content = stub.requestFile(file_path);
                     // file still on server
@@ -49,11 +49,6 @@ public class CacheHandler {
                     }
                     // file no longer available on server
                     else cache.removeFile(file_path);
-                }
-                // valid entry, update validation time t_c
-                else{
-                    long t_c = System.currentTimeMillis();
-                    cache.replaceFile(file_path, entry.getFileContent(), entry.getTmclient(), t_c);
                 }
             }
         }
