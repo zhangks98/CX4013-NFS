@@ -1,8 +1,10 @@
 package sg.edu.ntu.nfs.client;
 
-import sg.edu.ntu.nfs.common.requests.Request;
-import sg.edu.ntu.nfs.common.responses.Response;
-import sg.edu.ntu.nfs.common.responses.ResponseBuilder;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import sg.edu.ntu.nfs.common.requests.*;
+import sg.edu.ntu.nfs.common.responses.*;
+import sg.edu.ntu.nfs.common.values.Value;
 
 import java.io.IOException;
 import java.net.DatagramPacket;
@@ -13,24 +15,102 @@ import java.net.SocketException;
 import static sg.edu.ntu.nfs.common.Serializer.BUF_SIZE;
 
 public class Proxy {
+    private static final Logger logger = LogManager.getLogger();
     private final InetAddress address;
     private final int port;
     private DatagramSocket socket;
 
-    /**
-     * Construct the client-side proxy for RPC.
-     *
-     * @param address the server address.
-     * @param port the server port.
-     * @throws SocketException
-     */
     public Proxy(InetAddress address, int port) throws SocketException {
         this.address = address;
         this.port = port;
         this.socket = new DatagramSocket();
     }
 
-    public Response invoke(Request request) throws IOException {
+
+    public byte[] requestFile(String file_path) {
+        try{
+            Response res = invoke(new ReadRequest(file_path, 0, 0));
+            if(res.getStatus() == ResponseStatus.OK){
+                byte[] content = (byte[]) res.getValues().get(0).getVal();
+                return content;
+            }
+        }catch (IOException ex){
+            logger.warn("Error read", ex);
+        }
+        return null;
+    }
+
+    public int write(String file_path, int offset, int count, byte[] data) {
+        try{
+            Response res = invoke(new WriteRequest(file_path, offset, count, data));
+            if (res.getStatus() == ResponseStatus.OK){
+                int num_bytes_written = (int) res.getValues().get(0).getVal();
+                return num_bytes_written;
+            }
+        }catch (IOException ex){
+            logger.warn("Error write", ex);
+        }
+        return -1;
+    }
+
+    public long touch(String file_path) {
+        try{
+            Response res = invoke(new TouchRequest(file_path));
+            if (res.getStatus() == ResponseStatus.OK) {
+                long atime = (long) res.getValues().get(0).getVal();
+                return atime;
+            }
+        }catch (IOException ex){
+            logger.warn("Error touch", ex);
+        }
+        return -1;
+    }
+
+    public void listDir(String dir) {
+        try {
+            Response res = invoke(new ListDirRequest(dir));
+            if (res.getStatus() == ResponseStatus.OK) {
+                for (Value val : res.getValues()) {
+                    String filename = (String) val.getVal();
+                    System.out.println(filename);
+                }
+            }
+        } catch (IOException ex) {
+            logger.warn("Error listDir", ex);
+        }
+    }
+
+    public int register(String file_path, int monitor_interval) {
+        try{
+            Response res = invoke(new RegisterRequest(file_path, monitor_interval));
+            if (res.getStatus() == ResponseStatus.OK){
+                return 0;
+            }
+        }catch (IOException ex){
+            logger.warn("Error register", ex);
+        }
+        return -1;
+    }
+
+    public long[] getattr(String file_path) {
+        try{
+            Response res = invoke(new GetAttrRequest(file_path));
+            if (res.getStatus() == ResponseStatus.OK){
+                long mtime = (long) res.getValues().get(0).getVal();
+                long atime = (long) res.getValues().get(1).getVal();
+                long[] times = {mtime, atime};
+                return times;
+            }
+        }catch (IOException ex){
+            logger.warn("Error get attributes", ex);
+        }
+        long[] times = {-1, -1};
+        return times;
+    }
+
+    private Response invoke(Request request) throws IOException {
+        // Marshall and send the request.
+
         DatagramPacket req = new DatagramPacket(request.toBytes(), BUF_SIZE, address, port);
         socket.send(req);
 
