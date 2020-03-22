@@ -69,17 +69,4 @@ abstract class AbstractRequest implements Request {
         return name;
     }
 
-    /**
-     * Returns information of the request
-     * @return string representation of the request
-     */
-    @Override
-    public String toString() {
-        return "AbstractRequest{" +
-                "id=" + id +
-                ", name=" + name +
-                ", numParams=" + numParams +
-                ", params=" + params +
-                '}';
-    }
 }
