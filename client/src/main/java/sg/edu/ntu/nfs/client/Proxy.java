@@ -107,15 +107,16 @@ public class Proxy {
             logger.warn("Error get attributes", ex);
         }
         long[] times = {-1, -1};
+
         return times;
     }
 
     private Response invoke(Request request) throws IOException {
         // Marshall and send the request.
-
         DatagramPacket req = new DatagramPacket(request.toBytes(), BUF_SIZE, address, port);
         socket.send(req);
 
+        // Receive and unmarshal the response.
         byte[] buffer = new byte[BUF_SIZE];
         DatagramPacket response = new DatagramPacket(buffer, BUF_SIZE);
         socket.receive(response);

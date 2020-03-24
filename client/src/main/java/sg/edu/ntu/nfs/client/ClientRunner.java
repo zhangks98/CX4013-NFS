@@ -3,10 +3,6 @@ package sg.edu.ntu.nfs.client;
 import picocli.CommandLine;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Parameters;
-import sg.edu.ntu.nfs.common.requests.ListDirRequest;
-import sg.edu.ntu.nfs.common.responses.Response;
-import sg.edu.ntu.nfs.common.responses.ResponseStatus;
-import sg.edu.ntu.nfs.common.values.Value;
 
 import java.net.InetAddress;
 import java.util.Scanner;
@@ -29,15 +25,13 @@ public class ClientRunner implements Callable<Integer> {
         System.exit(exitCode);
     }
 
-    public boolean contains_num(String str_input){
-        try{
+    public boolean contains_num(String str_input) {
+        try {
             Integer.parseInt(str_input);
-        }
-        catch(NumberFormatException e){
+        } catch (NumberFormatException e) {
             System.out.println(str_input + " is not a numerical value");
             return false;
-        }
-        catch (Exception e){
+        } catch (Exception e) {
             System.out.print("Exception: " + e);
             return false;
         }
@@ -51,6 +45,7 @@ public class ClientRunner implements Callable<Integer> {
         }
         return true;
     }
+
 
     public void processCommand(String[] command) {
         boolean valid;
@@ -73,7 +68,7 @@ public class ClientRunner implements Callable<Integer> {
         } else if (command[0].equals("register")) {
             if (validate_length(command, 3) && contains_num(command[2]))
                 stub.register(command[1], Integer.parseInt(command[2]));
-
+          
         } else {
             System.out.println("Invalid commands, please try again");
         }

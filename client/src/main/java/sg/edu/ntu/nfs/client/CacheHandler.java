@@ -14,6 +14,7 @@ public class CacheHandler {
      * Get file from cache
      * if file not in cache, request file and cache it
      * validate the file upon access
+     *
      * @param file_path file path on server
      */
 
@@ -23,16 +24,15 @@ public class CacheHandler {
         if (entry == null){
             byte[] file_content = stub.requestFile(file_path);
             // file found on server
-            if(file_content != null){
+            if (file_content != null) {
                 long t_mclient = System.currentTimeMillis();
                 long t_c = System.currentTimeMillis();
                 cache.addFile(file_path, file_content, t_mclient, t_c);
                 return file_content;
-            }
-            else return null;
+            } else return null;
         }
         // in cache
-        else{
+        else {
             // check freshness upon access
             if(System.currentTimeMillis() - entry.getTc() >= cache.getFreshT()){
                 long[] attr = stub.getattr((file_path));
@@ -42,7 +42,7 @@ public class CacheHandler {
                     // update entry
                     byte[] file_content = stub.requestFile(file_path);
                     // file still on server
-                    if(file_content != null){
+                    if (file_content != null) {
                         long t_mclient = System.currentTimeMillis();
                         long t_c = System.currentTimeMillis();
                         cache.replaceFile(file_path, file_content, t_mclient, t_c);
@@ -60,9 +60,11 @@ public class CacheHandler {
     /**
      * Update server after write
      * if successful, update cache
-     * @param file_path file path on server
+     *
+     * @param file_path   file path on server
      * @param new_content new file content
      */
+
     /*
     public int write_file(String file_path, int offset, int count, byte[] new_content) {
         int response = stub.requestWrite(file_path, offset, count, new_content);
