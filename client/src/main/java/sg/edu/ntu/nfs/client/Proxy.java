@@ -27,23 +27,45 @@ public class Proxy {
     }
 
     public byte[] requestFile(String file_path) {
-        //TODO: send request
-        byte[] file_content = null;
-        // TODO: extract file content
-        return file_content;
+        try{
+            Response res = invoke(new ReadRequest(file_path, 0, 0));
+            if(res.getStatus() == ResponseStatus.OK){
+                byte[] content = (byte[]) res.getValues().get(0).getVal();
+                return content;
+            }
+        }catch (IOException ex){
+            logger.warn("Error read", ex);
+        }
+        return null;
     }
 
-    public int updateFile(String file_path, byte[] new_content) {
-        // TODO: send request
-        return 0;
+    public void write(String file_path, int offset, int count, byte[] data) {
+        try{
+            Response res = invoke(new WriteRequest(file_path, offset, count, data));
+            if (res.getStatus() == ResponseStatus.OK){
+                int num_bytes_written = (int) res.getValues().get(0).getVal();
+                System.out.println(num_bytes_written + " bytes written to " + file_path);
+            }else{
+                System.out.println("Error write");
+            }
+        }catch (IOException ex){
+            logger.warn("Error write", ex);
+        }
     }
 
-    public int requestTouch(String file_path) {
-        //TODO: request touch
-        int response = 0;
-        return response;
+    public void touch(String file_path) {
+        try{
+            Response res = invoke(new TouchRequest(file_path));
+            if (res.getStatus() == ResponseStatus.OK) {
+                long atime = (long) res.getValues().get(0).getVal();
+                System.out.println(file_path + "   Last accessed at: " + atime);
+            }else{
+                System.out.println("Error touch");
+            }
+        }catch (IOException ex){
+            logger.warn("Error touch", ex);
+        }
     }
-
 
     public void listDir(String dir) {
         try {
@@ -59,13 +81,33 @@ public class Proxy {
         }
     }
 
-    public int register(String file_path) {
-        // TODO: request
-        return 0;
+    public void register(String file_path, int monitor_interval) {
+        try{
+            Response res = invoke(new RegisterRequest(file_path, monitor_interval));
+            if (res.getStatus() == ResponseStatus.OK){
+                System.out.println("Successfully registered");
+            }else{
+                System.out.println("Error register");
+            }
+        }catch (IOException ex){
+            logger.warn("Error register", ex);
+        }
     }
 
     public long[] getattr(String file_path) {
-        long[] times = {0, 0};
+        try{
+            Response res = invoke(new GetAttrRequest(file_path));
+            if (res.getStatus() == ResponseStatus.OK){
+                long mtime = (long) res.getValues().get(0).getVal();
+                long atime = (long) res.getValues().get(1).getVal();
+                long[] times = {mtime, atime};
+                return times;
+            }
+        }catch (IOException ex){
+            logger.warn("Error get attributes", ex);
+        }
+        long[] times = {-1, -1};
+
         return times;
     }
 
