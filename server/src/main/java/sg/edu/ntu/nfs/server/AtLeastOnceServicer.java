@@ -39,7 +39,13 @@ public class AtLeastOnceServicer implements Servicer {
         Path path = Paths.get(rootDir.getPath(), dirName);
         try {
             List<Value> res = Files.list(path)
-                    .map(file -> new Str(file.normalize().toString()))
+                    .map(Path::getFileName)
+                    .map(filepath -> {
+                        StringBuilder pathString = new StringBuilder(filepath.toString());
+                        if (Files.isDirectory(filepath))
+                            pathString.append('/');
+                        return new Str(pathString.toString());
+                    })
                     .collect(Collectors.toList());
             return new GenericResponse(ResponseStatus.OK, res);
         } catch (NotDirectoryException ex) {
