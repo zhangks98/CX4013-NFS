@@ -38,24 +38,6 @@ public class ClientRunner implements Callable<Integer> {
         return true;
     }
 
-    public boolean validate_read_command(String[] command, int len) {
-        // check number of arguments
-        if (command.length != len) {
-            System.out.println("The read command has missing/extra arguments");
-            return false;
-        }
-        return contains_num(command[2]) && contains_num(command[3]);
-    }
-
-    public boolean validate_write_command(String[] command, int len) {
-        // check number of arguments
-        if (command.length != len) {
-            System.out.println("The write command has missing/extra arguments");
-            return false;
-        }
-        return contains_num(command[2]);
-    }
-
     public boolean validate_length(String[] command, int len) {
         if (command.length != len) {
             System.out.println("The command has missing/extra arguments");
@@ -64,28 +46,29 @@ public class ClientRunner implements Callable<Integer> {
         return true;
     }
 
-    public void processCommand(String[] command) throws Exception {
+
+    public void processCommand(String[] command) {
         boolean valid;
         if (command[0].equals("read")) {
-            valid = validate_read_command(command, 4);
-            if (valid)
+            if(validate_length(command, 4) && contains_num(command[2]) && contains_num(command[3]))
                 file_op.read(command[1], Integer.parseInt(command[2]), Integer.parseInt(command[3]));
+
         } else if (command[0].equals("write")) {
-            valid = validate_write_command(command, 4);
-            if (valid)
-                file_op.write(command[1], Integer.parseInt(command[2]), command[3]);
+            if (validate_length(command, 5) && contains_num(command[2]) && contains_num(command[3]))
+                stub.write(command[1], Integer.parseInt(command[2]), Integer.parseInt(command[3]), command[4].getBytes());
+
         } else if (command[0].equals("touch")) {
-            valid = validate_length(command, 2);
-            if (valid)
-                stub.requestTouch(command[1]);
+            if (validate_length(command, 2))
+                stub.touch(command[1]);
+
         } else if (command[0].equals("ls")) {
-            valid = validate_length(command, 2);
-            if (valid)
+            if (validate_length(command, 2))
                 stub.listDir(command[1]);
+
         } else if (command[0].equals("register")) {
-            valid = validate_length(command, 2);
-            if (valid)
-                stub.register(command[1]);
+            if (validate_length(command, 3) && contains_num(command[2]))
+                stub.register(command[1], Integer.parseInt(command[2]));
+          
         } else {
             System.out.println("Invalid commands, please try again");
         }

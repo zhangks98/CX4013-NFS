@@ -1,4 +1,4 @@
-package sg.edu.ntu.nfs.server.exceptions;
+package sg.edu.ntu.nfs.common.exceptions;
 
 public class NotFoundException extends Exception {
     public NotFoundException(String message) {

@@ -6,8 +6,8 @@ import sg.edu.ntu.nfs.common.requests.*;
 import sg.edu.ntu.nfs.common.responses.*;
 import sg.edu.ntu.nfs.common.values.Str;
 import sg.edu.ntu.nfs.common.values.Value;
-import sg.edu.ntu.nfs.server.exceptions.BadRequestException;
-import sg.edu.ntu.nfs.server.exceptions.NotFoundException;
+import sg.edu.ntu.nfs.common.exceptions.BadRequestException;
+import sg.edu.ntu.nfs.common.exceptions.NotFoundException;
 
 import java.io.File;
 import java.io.IOException;
