@@ -11,21 +11,25 @@ public class FileOperations {
 
     }
 
-    public void read(String file_path, int offset, int count) {
-        byte[] file = cache_handler.get_file(file_path);
+    public byte[] read(String file_path, int offset, int count) {
+        byte[] file = cache_handler.getFile(file_path);
+        String msg;
         if (file != null){
-            if (offset > file.length){
+            if (offset >= file.length){
                 System.out.println("Offset out of range");
+                return null;
             }else if (file.length - offset < count){
-                byte[] slice = Arrays.copyOfRange(file, offset, file.length-1);
-                System.out.println("Count out of range, returning available bytes:");
-                System.out.println(slice.toString());
+                byte[] slice = Arrays.copyOfRange(file, offset, file.length);
+                System.out.println("Count out of range, returning available bytes:\n" + slice.toString());
+                return slice;
             }else{
-                byte[] slice = Arrays.copyOfRange(file, offset, offset + count -1);
-                System.out.println(slice);
+                byte[] slice = Arrays.copyOfRange(file, offset, offset + count);
+                System.out.println(slice.toString());
+                return slice;
             }
         }else{
             System.out.println(file_path + " is no longer available on server");
+            return null;
         }
     }
 

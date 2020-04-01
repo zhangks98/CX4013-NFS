@@ -18,7 +18,7 @@ public class CacheHandler {
      * @param file_path file path on server
      */
 
-    public byte[] get_file(String file_path) {
+    public byte[] getFile(String file_path) {
         CacheEntry entry = cache.getFile(file_path);
         // not in cache
         if (entry == null){
@@ -53,6 +53,10 @@ public class CacheHandler {
             }
         }
         return entry.getFileContent();
+    }
+
+    public Cache getCache(){
+        return cache;
     }
 
 

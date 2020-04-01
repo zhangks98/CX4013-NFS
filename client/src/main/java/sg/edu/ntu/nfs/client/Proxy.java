@@ -7,10 +7,7 @@ import sg.edu.ntu.nfs.common.responses.*;
 import sg.edu.ntu.nfs.common.values.Value;
 
 import java.io.IOException;
-import java.net.DatagramPacket;
-import java.net.DatagramSocket;
-import java.net.InetAddress;
-import java.net.SocketException;
+import java.net.*;
 
 import static sg.edu.ntu.nfs.common.Serializer.BUF_SIZE;
 
@@ -19,6 +16,8 @@ public class Proxy {
     private final InetAddress address;
     private final int port;
     private DatagramSocket socket;
+    private int timeout = 1000; // in milliseconds
+    private int max_recv_attempts = 5;
 
     public Proxy(InetAddress address, int port) throws SocketException {
         this.address = address;
@@ -114,13 +113,22 @@ public class Proxy {
     private Response invoke(Request request) throws IOException {
         // Marshall and send the request.
         DatagramPacket req = new DatagramPacket(request.toBytes(), BUF_SIZE, address, port);
-        socket.send(req);
 
-        // Receive and unmarshal the response.
-        byte[] buffer = new byte[BUF_SIZE];
-        DatagramPacket response = new DatagramPacket(buffer, BUF_SIZE);
-        socket.receive(response);
-
-        return ResponseBuilder.parseFrom(buffer);
+        for (int i = 0; i < max_recv_attempts; i++){
+            socket.send(req); // same socket for servicer
+            socket.setSoTimeout(timeout);
+            // receive data until timeout
+            while(true){
+                // Receive and unmarshal the response.
+                byte[] buffer = new byte[BUF_SIZE];
+                DatagramPacket response = new DatagramPacket(buffer, BUF_SIZE);
+                socket.receive(response);
+                String rcvd = "Received from " + response.getAddress() + ", " + response.getPort() + ": "+ new String(response.getData(), 0, response.getLength());
+                System.out.println(rcvd);
+                return ResponseBuilder.parseFrom(buffer);
+            }
+        }
+        System.out.format("No response received after %d attempts", max_recv_attempts);
+        return null;
     }
 }
