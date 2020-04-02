@@ -20,6 +20,17 @@ public class ClientRunner implements Callable<Integer> {
     @Parameters(index = "1", description = "The port of the file server.")
     private int port;
 
+    String interface_msg = "\n=========== Client User Interface ==========\n"
+            + "The following commands are available:\n"
+            + "| read [file_path] [offset] [count]       |\n"
+            + "| write [file_path] [offset] [data]       |\n"
+            + "| register [file_path] [monitor_interval] |\n"
+            + "| touch [new_file_path]                   |\n"
+            + "| ls [dir]                                |\n"
+            + "| help                                    |\n"
+            + "| exit                                    |";
+
+
     public static void main(String... args) {
         int exitCode = new CommandLine(new ClientRunner()).execute(args);
         System.exit(exitCode);
@@ -83,6 +94,9 @@ public class ClientRunner implements Callable<Integer> {
             if (validate_length(command, 3) && contains_num(command[2]))
                 stub.register(command[1], Integer.parseInt(command[2]));
           
+        } else if (command[0].equals("help")) {
+            System.out.println(interface_msg);
+
         } else {
             System.out.println("Invalid commands, please try again");
         }
@@ -95,18 +109,16 @@ public class ClientRunner implements Callable<Integer> {
         cache_handler = new CacheHandler(stub, 1000);
         file_op = new FileOperations(cache_handler);
 
-        String interface_msg = "\n=========== Client User Interface ==========\n"
-                + "The following commands are available:\n"
-                + "| read [file_path] [offset] [count]       |\n"
-                + "| write [file_path] [offset] [data]       |\n"
-                + "| register [file_path]                    |\n"
-                + "| touch [new_file_path]                   |\n"
-                + "| ls [dir]                                |";
-
         System.out.println(interface_msg);
-        String user_input = sc.nextLine();
-        String[] split_input = user_input.trim().split(" ");
-        processCommand(split_input);
+
+        while (true){
+            System.out.print("$ ");
+            String user_input = sc.nextLine();
+            if (user_input.trim().equals("exit"))
+                break;
+            String[] split_input = user_input.trim().split(" ");
+            processCommand(split_input);
+        }
         return 0;
     }
 }

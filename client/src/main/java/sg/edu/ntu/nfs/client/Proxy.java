@@ -39,6 +39,8 @@ public class Proxy {
             } else {
                 logger.warn("Error read: response " + res.getStatus().toString());
             }
+        } catch (NullPointerException null_ex) {
+            logger.warn("Error read: no response");
         } catch (IOException ex) {
             logger.warn("Error read", ex);
         }
@@ -62,6 +64,8 @@ public class Proxy {
             } else {
                 logger.warn("Error write: response " + res.getStatus().toString());
             }
+        } catch (NullPointerException null_ex) {
+            logger.warn("Error write: no response");
         } catch (IOException ex) {
             logger.warn("Error write", ex);
         }
@@ -82,7 +86,9 @@ public class Proxy {
             } else {
                 logger.warn("Error touch: response " + res.getStatus().toString());
             }
-        } catch (IOException ex){
+        } catch (NullPointerException null_ex) {
+            logger.warn("Error touch: no response");
+        } catch (IOException ex) {
             logger.warn("Error touch", ex);
         }
     }
@@ -102,6 +108,8 @@ public class Proxy {
             } else {
                 logger.warn("Error listDir: response " + res.getStatus().toString());
             }
+        } catch (NullPointerException null_ex) {
+            logger.warn("Error listDir: no response");
         } catch (IOException ex) {
             logger.warn("Error listDir", ex);
         }
@@ -120,6 +128,8 @@ public class Proxy {
             } else {
                 logger.warn("Error register: response " + res.getStatus().toString());
             }
+        } catch (NullPointerException null_ex) {
+            logger.warn("Error register: no response");
         } catch (IOException ex) {
             logger.warn("Error register", ex);
         }
@@ -139,8 +149,10 @@ public class Proxy {
                 long[] times = {mtime, atime};
                 return times;
             } else {
-                logger.warn("Error get attribute: response " + res.getStatus().toString());
+                logger.warn("Error get attributes: response " + res.getStatus().toString());
             }
+        } catch (NullPointerException null_ex) {
+            logger.warn("Error get attributes: no response");
         } catch (IOException ex) {
             logger.warn("Error get attributes", ex);
         }
@@ -176,13 +188,13 @@ public class Proxy {
                     logger.info(rcvd);
                     return ResponseBuilder.parseFrom(buffer);
 
-                } catch (SocketException e) {
+                } catch (SocketTimeoutException e) {
                     if ( ++count == max_recv_attempts) throw e;
                 }
             }
 
-        } catch (SocketException se) {
-            System.out.format("No response received after %d attempts", max_recv_attempts);
+        } catch (SocketTimeoutException se) {
+            System.out.format("No response received after %d attempts \n", max_recv_attempts);
 
         } catch (IOException e) {
             e.printStackTrace();
