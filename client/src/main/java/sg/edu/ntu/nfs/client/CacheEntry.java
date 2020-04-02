@@ -7,7 +7,6 @@ public class CacheEntry {
 
     /**
      * Entry in the client cache
-     *
      * @param file_content file content of the entry.
      * @param t_c          last validation time.
      * @param t_mclient    last modification time.

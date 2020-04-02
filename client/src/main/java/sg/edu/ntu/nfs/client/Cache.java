@@ -12,8 +12,8 @@ public class Cache {
 
     /**
      * Return file if cached, otherwise return null
-     *
      * @param file_path file path on server
+     * @return cache entry of the requested file
      */
     public CacheEntry getFile(String file_path) {
         return cached_files.get(file_path);
@@ -22,7 +22,6 @@ public class Cache {
     /**
      * Add a new entry to the cached files
      * after getting a file from server
-     *
      * @param file_path    file path on server
      * @param file_content content of the file
      * @param t_mclient    last modification time on client - given by cache handler
@@ -36,7 +35,6 @@ public class Cache {
     /**
      * Replace/update an existing cache entry
      * used when updating the server with a written file
-     *
      * @param file_path   file path on server
      * @param new_content new content of the file
      * @param t_mclient   last modification time on client - given by cache handler
@@ -52,7 +50,6 @@ public class Cache {
 
     /**
      * Remove a cached file
-     *
      * @param file_path file path on server
      */
     public void removeFile(String file_path) {
