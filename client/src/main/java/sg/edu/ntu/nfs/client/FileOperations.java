@@ -21,7 +21,7 @@ public class FileOperations {
      * @param count byte counts of content requested
      * @return an Optional object of bytes
      */
-    public Optional<byte[]> read(String file_path, int offset, int count) {
+    public Optional<byte[]> read(String file_path, int offset, int count) throws NullPointerException {
 
         byte[] file = cache_handler.getFile(file_path);
         Optional<byte[]> opt = Optional.empty();
@@ -42,7 +42,7 @@ public class FileOperations {
             }
 
         } else {
-            logger.error(file_path + " is no longer available on server");
+            logger.error(file_path + " is not found on server");
         }
         return opt;
     }

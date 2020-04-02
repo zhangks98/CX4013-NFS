@@ -30,19 +30,13 @@ public class Proxy {
      * @param file_path file path on server
      * @return file content in bytes
      */
-    public byte[] requestFile(String file_path) {
-        try {
-            Response res = invoke(new ReadRequest(file_path, 0, 0));
-            if (res.getStatus() == ResponseStatus.OK) {
-                byte[] content = (byte[]) res.getValues().get(0).getVal();
-                return content;
-            } else {
-                logger.warn("Error read: response " + res.getStatus().toString());
-            }
-        } catch (NullPointerException null_ex) {
-            logger.warn("Error read: no response");
-        } catch (IOException ex) {
-            logger.warn("Error read", ex);
+    public byte[] requestFile(String file_path) throws NullPointerException {
+        Response res = invoke(new ReadRequest(file_path, 0, 0));
+        if (res.getStatus() == ResponseStatus.OK) {
+            byte[] content = (byte[]) res.getValues().get(0).getVal();
+            return content;
+        } else {
+            logger.warn("Error read: response " + res.getStatus().toString());
         }
         return null;
     }
@@ -55,19 +49,13 @@ public class Proxy {
      * @param count number of bytes to write
      * @param data bytes to write
      */
-    public void write(String file_path, int offset, int count, byte[] data) {
-        try {
-            Response res = invoke(new WriteRequest(file_path, offset, count, data));
-            if (res.getStatus() == ResponseStatus.OK) {
-                int num_bytes_written = (int) res.getValues().get(0).getVal();
-                logger.info(num_bytes_written + " bytes written to " + file_path);
-            } else {
-                logger.warn("Error write: response " + res.getStatus().toString());
-            }
-        } catch (NullPointerException null_ex) {
-            logger.warn("Error write: no response");
-        } catch (IOException ex) {
-            logger.warn("Error write", ex);
+    public void write(String file_path, int offset, int count, byte[] data) throws NullPointerException {
+        Response res = invoke(new WriteRequest(file_path, offset, count, data));
+        if (res.getStatus() == ResponseStatus.OK) {
+            int num_bytes_written = (int) res.getValues().get(0).getVal();
+            logger.info(num_bytes_written + " bytes written to " + file_path);
+        } else {
+            logger.warn("Error write: response " + res.getStatus().toString());
         }
     }
 
@@ -77,19 +65,13 @@ public class Proxy {
      * otherwise, file will be created on the server
      * @param file_path file path on server
      */
-    public void touch(String file_path) {
-        try {
-            Response res = invoke(new TouchRequest(file_path));
-            if (res.getStatus() == ResponseStatus.OK) {
-                long atime = (long) res.getValues().get(0).getVal();
-                logger.info(file_path + "   Last accessed at: " + atime);
-            } else {
-                logger.warn("Error touch: response " + res.getStatus().toString());
-            }
-        } catch (NullPointerException null_ex) {
-            logger.warn("Error touch: no response");
-        } catch (IOException ex) {
-            logger.warn("Error touch", ex);
+    public void touch(String file_path) throws NullPointerException {
+        Response res = invoke(new TouchRequest(file_path));
+        if (res.getStatus() == ResponseStatus.OK) {
+            long atime = (long) res.getValues().get(0).getVal();
+            logger.info(file_path + "   Last accessed at: " + atime);
+        } else {
+            logger.warn("Error touch: response " + res.getStatus().toString());
         }
     }
 
@@ -97,21 +79,15 @@ public class Proxy {
      * Send a request to list the contents of a directory on the server
      * @param dir directory of interest on server
      */
-    public void listDir(String dir) {
-        try {
-            Response res = invoke(new ListDirRequest(dir));
-            if (res.getStatus() == ResponseStatus.OK) {
-                for (Value val : res.getValues()) {
-                    String filename = (String) val.getVal();
-                    System.out.println(filename);
-                }
-            } else {
-                logger.warn("Error listDir: response " + res.getStatus().toString());
+    public void listDir(String dir) throws NullPointerException {
+        Response res = invoke(new ListDirRequest(dir));
+        if (res.getStatus() == ResponseStatus.OK) {
+            for (Value val : res.getValues()) {
+                String filename = (String) val.getVal();
+                System.out.println(filename);
             }
-        } catch (NullPointerException null_ex) {
-            logger.warn("Error listDir: no response");
-        } catch (IOException ex) {
-            logger.warn("Error listDir", ex);
+        } else {
+            logger.warn("Error listDir: response " + res.getStatus().toString());
         }
     }
 
@@ -120,18 +96,12 @@ public class Proxy {
      * @param file_path file path on server
      * @param monitor_interval duration for monitor file updates
      */
-    public void register(String file_path, int monitor_interval) {
-        try {
-            Response res = invoke(new RegisterRequest(file_path, monitor_interval));
-            if (res.getStatus() == ResponseStatus.OK) {
-                logger.info("Successfully registered");
-            } else {
-                logger.warn("Error register: response " + res.getStatus().toString());
-            }
-        } catch (NullPointerException null_ex) {
-            logger.warn("Error register: no response");
-        } catch (IOException ex) {
-            logger.warn("Error register", ex);
+    public void register(String file_path, int monitor_interval) throws NullPointerException {
+        Response res = invoke(new RegisterRequest(file_path, monitor_interval));
+        if (res.getStatus() == ResponseStatus.OK) {
+            logger.info("Successfully registered");
+        } else {
+            logger.warn("Error register: response " + res.getStatus().toString());
         }
     }
 
@@ -140,21 +110,15 @@ public class Proxy {
      * @param file_path file path on server
      * @return last modified time and last access time of the file
      */
-    public long[] getAttr(String file_path) {
-        try {
-            Response res = invoke(new GetAttrRequest(file_path));
-            if (res.getStatus() == ResponseStatus.OK){
-                long mtime = (long) res.getValues().get(0).getVal();
-                long atime = (long) res.getValues().get(1).getVal();
-                long[] times = {mtime, atime};
-                return times;
-            } else {
-                logger.warn("Error get attributes: response " + res.getStatus().toString());
-            }
-        } catch (NullPointerException null_ex) {
-            logger.warn("Error get attributes: no response");
-        } catch (IOException ex) {
-            logger.warn("Error get attributes", ex);
+    public long[] getAttr(String file_path) throws NullPointerException {
+        Response res = invoke(new GetAttrRequest(file_path));
+        if (res.getStatus() == ResponseStatus.OK){
+            long mtime = (long) res.getValues().get(0).getVal();
+            long atime = (long) res.getValues().get(1).getVal();
+            long[] times = {mtime, atime};
+            return times;
+        } else {
+            logger.warn("Error get attributes: response " + res.getStatus().toString());
         }
         long[] times = {-1, -1};
         return times;
@@ -165,9 +129,8 @@ public class Proxy {
      * If timeout, retry within maximum possible attempts
      * @param request client request
      * @return server response
-     * @throws IOException
      */
-    private Response invoke(Request request) throws IOException {
+    private Response invoke(Request request) {
         try {
             int count = 0;
 
@@ -194,10 +157,10 @@ public class Proxy {
             }
 
         } catch (SocketTimeoutException se) {
-            System.out.format("No response received after %d attempts \n", max_recv_attempts);
+            logger.warn(String.format("No response received after %d attempts", max_recv_attempts));
 
-        } catch (IOException e) {
-            e.printStackTrace();
+        }  catch (IOException e) {
+            logger.warn("Error " + request.getName() + ": " + e);
         }
         return null;
     }

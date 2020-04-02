@@ -17,7 +17,7 @@ public class CacheHandler {
      * @param file_path file path on server
      * @return file content in bytes
      */
-    public byte[] getFile(String file_path) {
+    public byte[] getFile(String file_path) throws NullPointerException {
         CacheEntry entry = cache.getFile(file_path);
 
         // not in cache
