@@ -4,6 +4,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import java.util.Arrays;
+import java.util.Optional;
 
 import static org.mockito.Mockito.*;
 
@@ -21,17 +22,30 @@ public class FileOperationsTest {
         fileOps = new FileOperations(cacheHandler);
     }
 
-
     @Test
-    public void get_file() {
+    public void readValidOffsetValidCount() {
         String path = "file.txt";
         byte[] expected = new byte[] {0xa, 0xb, 0xc};
         when(stub.requestFile(path)).thenReturn(expected);
-        byte[] actual = fileOps.read(path, 0, expected.length);
-        assertArrayEquals(expected, actual);
-        actual = fileOps.read(path, 1, expected.length + 1);
-        assertArrayEquals(Arrays.copyOfRange(expected, 1, expected.length), actual);
-        actual = fileOps.read(path, expected.length, 1);
-        assertArrayEquals(null, actual);
+        Optional<byte[]> actual = fileOps.read(path, 0, expected.length);
+        assertArrayEquals(expected, actual.get());
+    }
+
+    @Test
+    public void readValidOffsetInvalidCount() {
+        String path = "file.txt";
+        byte[] expected = new byte[] {0xa, 0xb, 0xc};
+        when(stub.requestFile(path)).thenReturn(expected);
+        Optional<byte[]> actual = fileOps.read(path, 1, expected.length + 1);
+        assertArrayEquals(Arrays.copyOfRange(expected, 1, expected.length), actual.get());
+    }
+
+    @Test
+    public void readInvalidOffsetValidCount() {
+        String path = "file.txt";
+        byte[] expected = new byte[] {0xa, 0xb, 0xc};
+        when(stub.requestFile(path)).thenReturn(expected);
+        Optional<byte[]> actual = fileOps.read(path, expected.length, 1);
+        assertEquals(false, actual.isPresent());
     }
 }

@@ -12,6 +12,7 @@ public class CacheTest {
         byte[] content = "This is text A".getBytes();
         long t_mclient = 1000;
         long t_c = 1200;
+
         cache.addFile(file_path, content, t_mclient, t_c);
         CacheEntry cached = cache.getFile(file_path);
         assertEquals(cached.getFileContent(), content);
@@ -33,6 +34,7 @@ public class CacheTest {
         byte[] new_content = "This is text C".getBytes();
         long t_mclient = 1000;
         long t_c = 1200;
+
         cache.addFile(file_path, content, t_mclient, t_c);
         cache.replaceFile(file_path, new_content, t_mclient, t_c);
         CacheEntry cached = cache.getFile(file_path);
@@ -47,6 +49,7 @@ public class CacheTest {
         byte[] content = "This is text A".getBytes();
         long t_mclient = 1000;
         long t_c = 1200;
+
         cache.addFile(file_path, content, t_mclient, t_c);
         cache.removeFile(file_path);
         CacheEntry cached = cache.getFile(file_path);

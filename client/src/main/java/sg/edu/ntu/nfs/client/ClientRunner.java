@@ -25,6 +25,11 @@ public class ClientRunner implements Callable<Integer> {
         System.exit(exitCode);
     }
 
+    /**
+     * Check if an input string is a string of integer
+     * @param str_input input string
+     * @return true if a number can be parsed from the string
+     */
     public boolean contains_num(String str_input) {
         try {
             Integer.parseInt(str_input);
@@ -38,6 +43,12 @@ public class ClientRunner implements Callable<Integer> {
         return true;
     }
 
+    /**
+     * Check if a command is of the correct length
+     * @param command input command
+     * @param len desired length
+     * @return true if the command is of the desired length
+     */
     public boolean validate_length(String[] command, int len) {
         if (command.length != len) {
             System.out.println("The command has missing/extra arguments");
@@ -46,7 +57,10 @@ public class ClientRunner implements Callable<Integer> {
         return true;
     }
 
-
+    /**
+     * Identify the command type and call the stub to invoke corresponding methods
+     * @param command input command
+     */
     public void processCommand(String[] command) {
         boolean valid;
         if (command[0].equals("read")) {
@@ -88,6 +102,7 @@ public class ClientRunner implements Callable<Integer> {
                 + "| register [file_path]                    |\n"
                 + "| touch [new_file_path]                   |\n"
                 + "| ls [dir]                                |";
+
         System.out.println(interface_msg);
         String user_input = sc.nextLine();
         String[] split_input = user_input.trim().split(" ");
