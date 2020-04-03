@@ -6,7 +6,10 @@ import picocli.CommandLine;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Parameters;
 
+import java.io.IOException;
 import java.net.InetAddress;
+import java.net.SocketException;
+import java.net.SocketTimeoutException;
 import java.util.Scanner;
 import java.util.concurrent.Callable;
 
@@ -110,8 +113,8 @@ public class ClientRunner implements Callable<Integer> {
                 logger.warn("Invalid commands, please try again");
             }
 
-        } catch (NullPointerException e) {
-            logger.warn("Error " + command[0] + ": no response");
+        } catch (IOException e) {
+            logger.warn("Error " + command[0] + ": " + e);
         }
     }
 
@@ -124,7 +127,7 @@ public class ClientRunner implements Callable<Integer> {
 
         System.out.println(interface_msg);
 
-        while (true){
+        while (true) {
             System.out.print("$ ");
             String user_input = sc.nextLine();
             if (user_input.trim().equals("exit"))
