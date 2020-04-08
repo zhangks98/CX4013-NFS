@@ -1,7 +1,7 @@
 import pytest
 
-from nfs.common.responses import *
-from nfs.common.values import *
+from nfs.common.responses import Response, ResponseStatus
+from nfs.common.values import Int32, Int64, Bytes, Str
 
 
 def test_empty_response():
