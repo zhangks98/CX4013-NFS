@@ -7,6 +7,13 @@ import java.util.List;
 
 public interface Response extends Serializer {
     /**
+     * Get the request id.
+     *
+     * @return request id.
+     */
+    int getReqId();
+
+    /**
      * Get the response status.
      *
      * @return response status.

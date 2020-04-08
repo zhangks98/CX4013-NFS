@@ -14,33 +14,38 @@ public class CacheHandler {
      * Get file from cache
      * if file not in cache, request file and cache it
      * validate the file upon access
-     *
      * @param file_path file path on server
+     * @return file content in bytes
      */
-
-    public byte[] get_file(String file_path) {
+    public byte[] getFile(String file_path) {
         CacheEntry entry = cache.getFile(file_path);
+
         // not in cache
-        if (entry == null){
+        if (entry == null) {
             byte[] file_content = stub.requestFile(file_path);
+
             // file found on server
             if (file_content != null) {
                 long t_mclient = System.currentTimeMillis();
                 long t_c = System.currentTimeMillis();
                 cache.addFile(file_path, file_content, t_mclient, t_c);
                 return file_content;
-            } else return null;
+            } else
+                return null;
         }
+
         // in cache
         else {
             // check freshness upon access
-            if(System.currentTimeMillis() - entry.getTc() >= cache.getFreshT()){
-                long[] attr = stub.getattr((file_path));
+            if (System.currentTimeMillis() - entry.getTc() >= cache.getFreshT()) {
+                long[] attr = stub.getAttr((file_path));
                 long t_mserver = attr[0];
+
                 // invalid entry
-                if(entry.getTmclient() < t_mserver){
+                if (entry.getTmclient() < t_mserver) {
                     // update entry
                     byte[] file_content = stub.requestFile(file_path);
+
                     // file still on server
                     if (file_content != null) {
                         long t_mclient = System.currentTimeMillis();
@@ -48,11 +53,16 @@ public class CacheHandler {
                         cache.replaceFile(file_path, file_content, t_mclient, t_c);
                     }
                     // file no longer available on server
-                    else cache.removeFile(file_path);
+                    else
+                        cache.removeFile(file_path);
                 }
             }
         }
         return entry.getFileContent();
+    }
+
+    public Cache getCache(){
+        return cache;
     }
 
 
