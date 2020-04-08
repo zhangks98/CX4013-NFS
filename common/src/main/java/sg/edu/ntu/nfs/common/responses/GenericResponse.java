@@ -8,16 +8,23 @@ import java.util.Collections;
 import java.util.List;
 
 public class GenericResponse implements Response {
+    private final int reqId;
     private final ResponseStatus status;
     private final List<Value> values;
 
-    public GenericResponse(ResponseStatus status) {
-        this(status, Collections.emptyList());
+    public GenericResponse(int reqId, ResponseStatus status) {
+        this(reqId, status, Collections.emptyList());
     }
 
-    public GenericResponse(ResponseStatus status, List<Value> values) {
+    public GenericResponse(int reqId, ResponseStatus status, List<Value> values) {
+        this.reqId = reqId;
         this.status = status;
         this.values = values;
+    }
+
+    @Override
+    public int getReqId() {
+        return reqId;
     }
 
     @Override
@@ -34,7 +41,8 @@ public class GenericResponse implements Response {
     public byte[] toBytes() throws InvalidClassException {
         int numValues = values.size();
         ByteBuffer payload = ByteBuffer.allocate(BUF_SIZE);
-        payload.putInt(status.ordinal())
+        payload.putInt(reqId)
+                .putInt(status.ordinal())
                 .putInt(numValues);
         for (Value val : values) {
             payload.put(val.toBytes());

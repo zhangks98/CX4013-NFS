@@ -47,7 +47,7 @@ public class AtLeastOnceServicer implements Servicer {
                         return new Str(pathStringBuilder.toString());
                     })
                     .collect(Collectors.toList());
-            return new GenericResponse(ResponseStatus.OK, res);
+            return new GenericResponse(reqId, ResponseStatus.OK, res);
         } catch (NotDirectoryException ex) {
             throw new NotFoundException(ex.getMessage());
         }
