@@ -80,19 +80,19 @@ public class ServerRunner implements Callable<Integer> {
             } catch (BadRequestException exp) {
                 logger.warn(String.format("Bad request for %s", req.getName()), exp);
                 DatagramPacket response = new DatagramPacket(
-                        new GenericResponse(reqId, ResponseStatus.BAD_REQUEST).toBytes(), BUF_SIZE,
+                        new GenericResponse(req.getId(), ResponseStatus.BAD_REQUEST).toBytes(), BUF_SIZE,
                         ctx.getAddress(), ctx.getPort());
                 socket.send(response);
             } catch (NotFoundException exp) {
                 logger.warn(String.format("Not found for %s", req.getName()), exp);
                 DatagramPacket response = new DatagramPacket(
-                        new GenericResponse(reqId, ResponseStatus.NOT_FOUND).toBytes(), BUF_SIZE,
+                        new GenericResponse(req.getId(), ResponseStatus.NOT_FOUND).toBytes(), BUF_SIZE,
                         ctx.getAddress(), ctx.getPort());
                 socket.send(response);
             } catch (Exception exp) {
                 logger.error(String.format("Error handling %s", req.getName()), exp);
                 DatagramPacket response = new DatagramPacket(
-                        new GenericResponse(reqId, ResponseStatus.INTERNAL_ERROR).toBytes(), BUF_SIZE,
+                        new GenericResponse(req.getId(), ResponseStatus.INTERNAL_ERROR).toBytes(), BUF_SIZE,
                         ctx.getAddress(), ctx.getPort());
                 socket.send(response);
             }
