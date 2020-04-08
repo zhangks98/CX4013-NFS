@@ -33,17 +33,14 @@ public class Proxy {
      * @return file content in bytes
      */
     public Optional<byte[]> requestFile(String file_path) throws IOException {
-        Optional<Response> opt_res = invoke(new ReadRequest(file_path, 0, 0));
+        Response res = invoke(new ReadRequest(file_path, 0, 0));
         Optional<byte[]> opt_content = Optional.empty();
 
-        if (opt_res.isPresent()) {
-            Response res = opt_res.get();
-            if (res.getStatus() == ResponseStatus.OK) {
-                byte[] content = (byte[]) res.getValues().get(0).getVal();
-                opt_content = Optional.of(content);
-            } else {
-                logger.warn("Error read: response status " + res.getStatus().toString());
-            }
+        if (res.getStatus() == ResponseStatus.OK) {
+            byte[] content = (byte[]) res.getValues().get(0).getVal();
+            opt_content = Optional.of(content);
+        } else {
+            logger.warn("Error read: response status " + res.getStatus().toString());
         }
         return opt_content;
     }
@@ -57,15 +54,12 @@ public class Proxy {
      * @param data bytes to write
      */
     public void write(String file_path, int offset, int count, byte[] data) throws IOException {
-        Optional<Response> opt_res = invoke(new WriteRequest(file_path, offset, count, data));
-        if (opt_res.isPresent()) {
-            Response res = opt_res.get();
-            if (res.getStatus() == ResponseStatus.OK) {
-                int num_bytes_written = (int) res.getValues().get(0).getVal();
-                logger.info(num_bytes_written + " bytes written to " + file_path);
-            } else {
-                logger.warn("Error write: response status" + res.getStatus().toString());
-            }
+        Response res = invoke(new WriteRequest(file_path, offset, count, data));
+        if (res.getStatus() == ResponseStatus.OK) {
+            int num_bytes_written = (int) res.getValues().get(0).getVal();
+            logger.info(num_bytes_written + " bytes written to " + file_path);
+        } else {
+            logger.warn("Error write: response status" + res.getStatus().toString());
         }
     }
 
@@ -76,15 +70,12 @@ public class Proxy {
      * @param file_path file path on server
      */
     public void touch(String file_path) throws IOException {
-        Optional<Response> opt_res = invoke(new TouchRequest(file_path));
-        if (opt_res.isPresent()) {
-            Response res = opt_res.get();
-            if (res.getStatus() == ResponseStatus.OK) {
-                long atime = (long) res.getValues().get(0).getVal();
-                logger.info(file_path + "   Last accessed at: " + atime);
-            } else {
-                logger.warn("Error touch: response status " + res.getStatus().toString());
-            }
+        Response res = invoke(new TouchRequest(file_path));
+        if (res.getStatus() == ResponseStatus.OK) {
+            long atime = (long) res.getValues().get(0).getVal();
+            logger.info(file_path + "   Last accessed at: " + atime);
+        } else {
+            logger.warn("Error touch: response status " + res.getStatus().toString());
         }
     }
 
@@ -93,17 +84,14 @@ public class Proxy {
      * @param dir directory of interest on server
      */
     public void listDir(String dir) throws IOException {
-        Optional<Response> opt_res = invoke(new ListDirRequest(dir));
-        if (opt_res.isPresent()) {
-            Response res = opt_res.get();
-            if (res.getStatus() == ResponseStatus.OK) {
-                for (Value val : res.getValues()) {
-                    String filename = (String) val.getVal();
-                    System.out.println(filename);
-                }
-            } else {
-                logger.warn("Error listDir: response status " + res.getStatus().toString());
+        Response res = invoke(new ListDirRequest(dir));
+        if (res.getStatus() == ResponseStatus.OK) {
+            for (Value val : res.getValues()) {
+                String filename = (String) val.getVal();
+                System.out.println(filename);
             }
+        } else {
+            logger.warn("Error listDir: response status " + res.getStatus().toString());
         }
     }
 
@@ -113,14 +101,11 @@ public class Proxy {
      * @param monitor_interval duration for monitor file updates
      */
     public void register(String file_path, int monitor_interval) throws IOException {
-        Optional<Response> opt_res = invoke(new RegisterRequest(file_path, monitor_interval));
-        if (opt_res.isPresent()) {
-            Response res = opt_res.get();
-            if (res.getStatus() == ResponseStatus.OK) {
-                logger.info("Successfully registered");
-            } else {
-                logger.warn("Error register: response status " + res.getStatus().toString());
-            }
+        Response res = invoke(new RegisterRequest(file_path, monitor_interval));
+        if (res.getStatus() == ResponseStatus.OK) {
+            logger.info("Successfully registered");
+        } else {
+            logger.warn("Error register: response status " + res.getStatus().toString());
         }
     }
 
@@ -130,19 +115,16 @@ public class Proxy {
      * @return last modified time and last access time of the file
      */
     public Optional<long[]> getAttr(String file_path) throws IOException {
-        Optional<Response> opt_res = invoke(new GetAttrRequest(file_path));
+        Response res = invoke(new GetAttrRequest(file_path));
         Optional<long[]> opt_times = Optional.empty();
 
-        if (opt_res.isPresent()) {
-            Response res = opt_res.get();
-            if (res.getStatus() == ResponseStatus.OK){
-                long mtime = (long) res.getValues().get(0).getVal();
-                long atime = (long) res.getValues().get(1).getVal();
-                long[] times = {mtime, atime};
-                opt_times = Optional.of(times);
-            } else {
-                logger.warn("Error get attributes: response status " + res.getStatus().toString());
-            }
+        if (res.getStatus() == ResponseStatus.OK){
+            long mtime = (long) res.getValues().get(0).getVal();
+            long atime = (long) res.getValues().get(1).getVal();
+            long[] times = {mtime, atime};
+            opt_times = Optional.of(times);
+        } else {
+            logger.warn("Error get attributes: response status " + res.getStatus().toString());
         }
         return opt_times;
     }
@@ -153,9 +135,8 @@ public class Proxy {
      * @param request client request
      * @return server response
      */
-    private Optional<Response> invoke(Request request) throws IOException {
+    private Response invoke(Request request) throws IOException {
         int count = 0;
-        Optional<Response> opt = Optional.empty();
 
         // Marshall and send the request.
         DatagramPacket req = new DatagramPacket(request.toBytes(), BUF_SIZE, address, port);
@@ -172,8 +153,8 @@ public class Proxy {
                 String rcvd = "Received from " + response.getAddress() + ", " + response.getPort() + ": "
                         + new String(response.getData(),0, response.getLength());
                 logger.info(rcvd);
-                opt = Optional.of(ResponseBuilder.parseFrom(buffer));
-                return opt;
+                Response res = ResponseBuilder.parseFrom(buffer);
+                return res;
 
             } catch (SocketTimeoutException e) {
                 if ( ++count == max_recv_attempts) {
