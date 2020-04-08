@@ -13,6 +13,7 @@ public class ResponseBuilder {
 
     public static Response parseFrom(byte[] data) throws InvalidObjectException {
         ByteBuffer buf = ByteBuffer.wrap(data);
+        int reqId = buf.getInt();
         int statusIndex = buf.getInt();
         ResponseStatus status;
         if (statusIndex < 0 || statusIndex >= RESPONSE_STATUSES.length)
@@ -24,6 +25,6 @@ public class ResponseBuilder {
         for (int i = 0; i < numValues; i++) {
             values.add(ValueBuilder.parseFrom(buf));
         }
-        return new GenericResponse(status, values);
+        return new GenericResponse(reqId, status, values);
     }
 }
