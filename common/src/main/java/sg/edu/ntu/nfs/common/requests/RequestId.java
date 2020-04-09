@@ -1,7 +1,7 @@
 package sg.edu.ntu.nfs.common.requests;
 
 class RequestId {
-    private static int nextId = 0;
+    private static int nextId = 1;
     private final int id;
 
     RequestId() {

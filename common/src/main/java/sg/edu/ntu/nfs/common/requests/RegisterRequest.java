@@ -9,7 +9,7 @@ public class RegisterRequest extends AbstractRequest {
     }
 
     /**
-     * Clients subscribe its interest to observe {@link FileUpdatedRequest} for specified file
+     * Clients subscribe its interest to observe {@link FileUpdatedCallback} for specified file
      * within the monitor interval.
      * @param path the file path
      * @param monitorInterval time interval before server no longer updates the client,
