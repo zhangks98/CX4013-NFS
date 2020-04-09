@@ -1,13 +1,19 @@
 # Gradle
 .gradle
-**/build/
+build/
 # Ignore Gradle GUI config
 gradle-app.setting
 # Avoid ignoring Gradle wrapper jar file (.jar files are usually ignored)
 !gradle-wrapper.jar
 # Cache of project
 .gradletasknamecache
-
+# VSCode
+.vscode/*
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
 # Bazel
 *~
 bazel-*
