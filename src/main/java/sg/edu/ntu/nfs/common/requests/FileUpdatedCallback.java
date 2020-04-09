@@ -3,8 +3,8 @@ package sg.edu.ntu.nfs.common.requests;
 import sg.edu.ntu.nfs.common.values.Bytes;
 import sg.edu.ntu.nfs.common.values.Str;
 
-public class FileUpdatedRequest extends AbstractRequest {
-    FileUpdatedRequest(RequestId id) {
+public class FileUpdatedCallback extends AbstractRequest {
+    FileUpdatedCallback(RequestId id) {
         super(id, RequestName.FILE_UPDATED);
     }
 
@@ -13,7 +13,7 @@ public class FileUpdatedRequest extends AbstractRequest {
      * @param path the path of the updated file.
      * @param data the updated file content.
      */
-    public FileUpdatedRequest(String path, byte[] data) {
+    public FileUpdatedCallback(String path, byte[] data) {
         super(RequestName.FILE_UPDATED);
         addParam(new Str(path));
         addParam(new Bytes(data));

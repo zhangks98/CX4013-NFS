@@ -124,9 +124,9 @@ public class RequestTest {
     public void marshallFileUpdatedRequest() throws InvalidClassException, InvalidObjectException {
         String path = "test.txt";
         byte[] data = new byte[]{(byte) 0xdd, (byte) 0xee, (byte) 0xff};
-        FileUpdatedRequest expected = new FileUpdatedRequest(path, data);
+        FileUpdatedCallback expected = new FileUpdatedCallback(path, data);
         byte[] serialized = expected.toBytes();
-        FileUpdatedRequest actual = (FileUpdatedRequest) RequestBuilder.parseFrom(serialized);
+        FileUpdatedCallback actual = (FileUpdatedCallback) RequestBuilder.parseFrom(serialized);
         assertEquals(expected.getId(), actual.getId());
         assertEquals(RequestName.FILE_UPDATED, actual.getName());
         assertEquals(path, actual.getPath());
