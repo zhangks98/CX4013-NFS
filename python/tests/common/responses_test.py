@@ -1,14 +1,13 @@
 import pytest
 
 from nfs.common.responses import Response, ResponseStatus
-from nfs.common.values import Int32, Int64, Bytes, Str
+from nfs.common.values import Bytes, Int32, Int64, Str
 
 
 def test_empty_response():
-    values = []
     status = ResponseStatus.NOT_FOUND
     req_id = 0
-    expected = Response(req_id, status, values)
+    expected = Response(req_id, status)
     serialized = expected.to_bytes()
     actual = Response.from_bytes(serialized)
     assert actual.get_req_id() == req_id

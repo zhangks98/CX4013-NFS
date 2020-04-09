@@ -2,7 +2,7 @@ from enum import Enum, unique
 from typing import List
 
 from nfs.common.serialize import BUF_SIZE, ByteBuffer
-from nfs.common.values import Value, Str, Bytes
+from nfs.common.values import Bytes, Str, Value
 
 
 @unique
