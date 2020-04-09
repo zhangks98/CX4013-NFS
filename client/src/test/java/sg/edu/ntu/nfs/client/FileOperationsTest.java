@@ -3,6 +3,7 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.Optional;
 
@@ -26,26 +27,53 @@ public class FileOperationsTest {
     public void readValidOffsetValidCount() {
         String path = "file.txt";
         byte[] expected = new byte[] {0xa, 0xb, 0xc};
-        when(stub.requestFile(path)).thenReturn(expected);
-        Optional<byte[]> actual = fileOps.read(path, 0, expected.length);
-        assertArrayEquals(expected, actual.get());
+        Optional<byte[]> opt_expected = Optional.of(expected);
+
+        try {
+            when(stub.requestFile(path)).thenReturn(opt_expected);
+            Optional<byte[]> actual = fileOps.read(path, 0, expected.length);
+
+            assertEquals(true, actual.isPresent());
+            assertArrayEquals(expected, actual.get());
+
+        } catch (IOException e) {
+            System.out.println(e);
+        }
     }
 
     @Test
     public void readValidOffsetInvalidCount() {
         String path = "file.txt";
         byte[] expected = new byte[] {0xa, 0xb, 0xc};
-        when(stub.requestFile(path)).thenReturn(expected);
-        Optional<byte[]> actual = fileOps.read(path, 1, expected.length + 1);
-        assertArrayEquals(Arrays.copyOfRange(expected, 1, expected.length), actual.get());
+        Optional<byte[]> opt_expected = Optional.of(expected);
+
+        try {
+            when(stub.requestFile(path)).thenReturn(opt_expected);
+            Optional<byte[]> actual = fileOps.read(path, 1, expected.length + 1);
+
+            assertEquals(true, actual.isPresent());
+            assertArrayEquals(Arrays.copyOfRange(expected, 1, expected.length), actual.get());
+
+        } catch (Exception e) {
+            System.out.println(e);
+        }
+
     }
 
     @Test
     public void readInvalidOffsetValidCount() {
         String path = "file.txt";
         byte[] expected = new byte[] {0xa, 0xb, 0xc};
-        when(stub.requestFile(path)).thenReturn(expected);
-        Optional<byte[]> actual = fileOps.read(path, expected.length, 1);
-        assertEquals(false, actual.isPresent());
+        Optional<byte[]> opt_expected = Optional.of(expected);
+
+        try {
+            when(stub.requestFile(path)).thenReturn(opt_expected);
+            Optional<byte[]> actual = fileOps.read(path, expected.length, 1);
+
+            assertEquals(false, actual.isPresent());
+
+        } catch (IOException e) {
+            System.out.println(e);
+        }
     }
 }
