@@ -57,7 +57,7 @@ public class Proxy {
         Response res = invoke(new WriteRequest(file_path, offset, count, data));
         if (res.getStatus() == ResponseStatus.OK) {
             int num_bytes_written = (int) res.getValues().get(0).getVal();
-            logger.info(num_bytes_written + " bytes written to " + file_path);
+            System.out.println(num_bytes_written + " bytes written to " + file_path);
         } else {
             logger.warn("Error write: response status" + res.getStatus().toString());
         }
@@ -73,7 +73,7 @@ public class Proxy {
         Response res = invoke(new TouchRequest(file_path));
         if (res.getStatus() == ResponseStatus.OK) {
             long atime = (long) res.getValues().get(0).getVal();
-            logger.info(file_path + "   Last accessed at: " + atime);
+            System.out.println(file_path + "   Last accessed at: " + atime);
         } else {
             logger.warn("Error touch: response status " + res.getStatus().toString());
         }
@@ -150,9 +150,6 @@ public class Proxy {
                 byte[] buffer = new byte[BUF_SIZE];
                 DatagramPacket response = new DatagramPacket(buffer, BUF_SIZE);
                 socket.receive(response);
-                String rcvd = "Received from " + response.getAddress() + ", " + response.getPort() + ": "
-                        + new String(response.getData(),0, response.getLength());
-                logger.info(rcvd);
                 Response res = ResponseBuilder.parseFrom(buffer);
                 return res;
 

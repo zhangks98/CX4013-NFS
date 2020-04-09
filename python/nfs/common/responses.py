@@ -1,5 +1,5 @@
 from enum import Enum, unique
-from typing import List, Any
+from typing import Any, List
 
 from nfs.common.serialize import BUF_SIZE, ByteBuffer
 from nfs.common.values import Value
@@ -15,7 +15,7 @@ class ResponseStatus(Enum):
 
 
 class Response():
-    def __init__(self, req_id: int, status: ResponseStatus, values: List[Value]):
+    def __init__(self, req_id: int, status: ResponseStatus, values: List[Value] = []):
         self.req_id: int = req_id
         self.status: ResponseStatus = status
         self.values: List[Value] = values

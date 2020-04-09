@@ -1,8 +1,13 @@
-import pytest
-from nfs.common.requests import RequestName, Request, EmptyRequest, ReadRequest, WriteRequest, GetAttrRequest, ListDirRequest, TouchRequest, RegisterRequest, FileUpdatedCallback
-from nfs.common.values import Value, Int32, Bytes, Str
-from nfs.common.serialize import ByteBuffer
 from struct import pack_into
+
+import pytest
+
+from nfs.common.requests import (EmptyRequest, FileUpdatedCallback,
+                                 GetAttrRequest, ListDirRequest, ReadRequest,
+                                 RegisterRequest, Request, RequestName,
+                                 TouchRequest, WriteRequest)
+from nfs.common.serialize import ByteBuffer
+from nfs.common.values import Bytes, Int32, Str, Value
 
 
 def test_should_not_marshall_mismatched_param():
