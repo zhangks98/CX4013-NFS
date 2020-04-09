@@ -2,11 +2,16 @@ from enum import Enum, unique
 from typing import List
 
 from nfs.common.serialize import BUF_SIZE, ByteBuffer
-from nfs.common.values import Value
+from nfs.common.values import Value, Str, Bytes
 
 
 @unique
-class RequestName(Enum):
+class RequestName(bytes, Enum):
+    def __new__(cls, value, num_params):
+        obj = bytes.__new__(cls, [value])
+        obj._value_ = value
+        obj.num_params = num_params
+        return obj
     EMPTY = (0, 0)
     READ = (1, 3)
     WRITE = (2, 4)
@@ -16,16 +21,16 @@ class RequestName(Enum):
     REGISTER = (6, 2)
     FILE_UPDATED = (7, 2)
 
-    def __init__(self, ordinal: int, num_params: int):
-        self.ordinal: int = ordinal
-        self.num_params: int = num_params
-
 
 class Request():
     def __init__(self, id: int, name: RequestName):
+        """
+        Server only constructs request from the parser,
+        except for FileUpdatedCallback
+        """
         self.req_id: int = id
         self.name: RequestName = name
-        self.params: List[Value] = []
+        self.__params: List[Value] = []
 
     def get_id(self) -> int:
         return self.req_id
@@ -34,53 +39,149 @@ class Request():
         return self.name
 
     def add_param(self, val):
-        if len(self.params) >= self.name.num_params:
+        if len(self.__params) >= self.name.num_params:
             raise ValueError(
                 'Parameter length exceeds {}'.format(self.name.num_params))
-        self.params.append(val)
+        self.__params.append(val)
 
     def get_param(self, pos) -> Value:
-        return self.params[pos]
+        return self.__params[pos]
 
     def set_param(self, pos, val):
-        self.params[pos] = val
+        self.__params[pos] = val
 
     def to_bytes(self) -> bytes:
-        if len(self.params) != self.name.num_params:
-            raise ValueError("Unable to serialize request {}: wrong number of parameters. Expected: {}, Actual: {}.".format(
-                self.name, self.name.num_params, len(self.params)))
+        if len(self.__params) != self.name.num_params:
+            raise ValueError('Unable to marshal request {}: wrong number of parameters. Expected: {}, Actual: {}.'.format(
+                self.name.name, self.name.num_params, len(self.__params)))
         payload = ByteBuffer.allocate(BUF_SIZE)
         payload.put_int(self.req_id)\
-            .put_int(self.name.ordinal)\
+            .put_int(self.name.value)\
             .put_int(self.name.num_params)
-        for val in self.params:
+        for val in self.__params:
+            if not isinstance(val, Value):
+                raise TypeError('Illegal value type for marshalling.')
             payload.put_bytes(val.to_bytes())
         return payload.to_bytes()
 
+    @staticmethod
+    def from_bytes(data: bytes) -> 'Request':
+        buf = ByteBuffer.wrap(data)
+        req_id = buf.get_int()
+        req_name_ind = buf.get_int()
+        if req_name_ind < 0 or req_name_ind >= 8:
+            raise ValueError("Unable to parse request: unknown request name")
+        if req_name_ind == 7:
+            raise NotImplementedError(
+                "Server does not handle FileUpdatedCallback.")
+        req_name = RequestName(req_name_ind)
+        num_params = buf.get_int()
+        if req_name == RequestName.EMPTY:
+            req = EmptyRequest(req_id)
+        elif req_name == RequestName.READ:
+            req = ReadRequest(req_id)
+        elif req_name == RequestName.WRITE:
+            req = WriteRequest(req_id)
+        elif req_name == RequestName.GET_ATTR:
+            req = GetAttrRequest(req_id)
+        elif req_name == RequestName.LIST_DIR:
+            req = ListDirRequest(req_id)
+        elif req_name == RequestName.TOUCH:
+            req = TouchRequest(req_id)
+        elif req_name == RequestName.REGISTER:
+            req = RegisterRequest(req_id)
+
+        if num_params != req.get_name().num_params:
+            raise ValueError('Unable to parse request {}: wrong number of parameters. Expected: {}, Actual: {}.'.format(
+                req.get_name().name, req.get_name().num_params, num_params))
+
+        for _ in range(num_params):
+            req.add_param(Value.from_bytes(buf))
+        return req
+
+
+class EmptyRequest(Request):
+    def __init__(self, id: int):
+        super().__init__(id, RequestName.EMPTY)
+
 
 class ReadRequest(Request):
-    pass
+    def __init__(self, id: int):
+        super().__init__(id, RequestName.READ)
+
+    def get_path(self) -> str:
+        return self.get_param(2).get_val()
+
+    def get_offset(self) -> int:
+        return self.get_param(0).get_val()
+
+    def get_count(self) -> int:
+        return self.get_param(1).get_val()
 
 
 class WriteRequest(Request):
-    pass
+    def __init__(self, id: int):
+        super().__init__(id, RequestName.WRITE)
+
+    def get_path(self) -> str:
+        return self.get_param(2).get_val()
+
+    def get_offset(self) -> int:
+        return self.get_param(0).get_val()
+
+    def get_count(self) -> int:
+        return self.get_param(1).get_val()
+
+    def get_data(self) -> bytes:
+        return self.get_param(3).get_val()
 
 
 class GetAttrRequest(Request):
-    pass
+    def __init__(self, id: int):
+        super().__init__(id, RequestName.GET_ATTR)
+
+    def get_path(self) -> str:
+        return self.get_param(0).get_val()
 
 
 class ListDirRequest(Request):
-    pass
+    def __init__(self, id: int):
+        super().__init__(id, RequestName.LIST_DIR)
+
+    def get_path(self) -> str:
+        return self.get_param(0).get_val()
 
 
 class TouchRequest(Request):
-    pass
+    def __init__(self, id: int):
+        super().__init__(id, RequestName.TOUCH)
+
+    def get_path(self) -> str:
+        return self.get_param(0).get_val()
 
 
 class RegisterRequest(Request):
-    pass
+    def __init__(self, id: int):
+        super().__init__(id, RequestName.REGISTER)
+
+    def get_monitor_interval(self) -> int:
+        return self.get_param(0).get_val()
+
+    def get_path(self) -> str:
+        return self.get_param(1).get_val()
 
 
-class FileUpdatedRequest(Request):
-    pass
+class FileUpdatedCallback(Request):
+    def __init__(self, path: str, data: bytes):
+        """
+        Callbacks uses static id 0, since no response is needed.
+        """
+        super().__init__(id=0, name=RequestName.FILE_UPDATED)
+        self.add_param(Str(path))
+        self.add_param(Bytes(data))
+
+    def get_path(self) -> str:
+        return self.get_param(0).get_val()
+
+    def get_data(self) -> bytes:
+        return self.get_param(1).get_val()

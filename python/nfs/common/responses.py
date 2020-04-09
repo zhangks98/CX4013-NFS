@@ -39,6 +39,8 @@ class Response():
             .put_int(self.status.value)\
             .put_int(num_values)
         for val in self.values:
+            if not isinstance(val, Value):
+                raise TypeError('Illegal value type for marshalling.')
             payload.put_bytes(val.to_bytes())
         return payload.to_bytes()
 

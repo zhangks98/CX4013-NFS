@@ -28,3 +28,13 @@ def test_response_marshalling():
     assert actual.get_status() == status
     assert actual.get_py_values() == \
         [-(1 << 31), -(1 << 63), 'hello', b'world']
+
+
+def test_invalid_response_marshalling():
+    values = [1, 2, "hello", b'world']
+    req_id = 1
+    status = ResponseStatus.OK
+    expected = Response(req_id, status, values)
+    with pytest.raises(TypeError) as excinfo:
+        expected.to_bytes()
+    assert 'Illegal value type' in str(excinfo.value)
