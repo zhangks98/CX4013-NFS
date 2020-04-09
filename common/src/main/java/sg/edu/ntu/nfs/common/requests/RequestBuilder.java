@@ -40,7 +40,7 @@ public class RequestBuilder {
                 request = new RegisterRequest(id);
                 break;
             case FILE_UPDATED:
-                request = new FileUpdatedRequest(id);
+                request = new FileUpdatedCallback(id);
                 break;
             default:
                 throw new InvalidObjectException("Unable to parse request: no matching request name");
