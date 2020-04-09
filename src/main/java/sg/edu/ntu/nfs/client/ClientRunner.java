@@ -108,7 +108,7 @@ public class ClientRunner implements Callable<Integer> {
 
             } else if (command[0].equals("help")) {
                 System.out.println(interface_msg);
-
+                System.out.println();
             } else {
                 logger.warn("Invalid commands, please try again");
             }
@@ -126,6 +126,7 @@ public class ClientRunner implements Callable<Integer> {
         file_op = new FileOperations(cache_handler);
 
         System.out.println(interface_msg);
+        System.out.println();
 
         while (true) {
             System.out.print("$ ");
