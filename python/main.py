@@ -16,6 +16,13 @@ logger = logging.getLogger(__name__)
 
 
 def main():
+    """The main function.\n
+    Usage: `main.py [-h] -m {ALO,AMO} port path`\n
+    Example: python main.py -m AMO 2222 .
+    
+    :raises OSError: [description]
+    :raises RuntimeError: [description]
+    """
     parser = argparse.ArgumentParser(
         description='Server for Remote File Access')
     parser.add_argument('port', type=int, help='Server port.')
