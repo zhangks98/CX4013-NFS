@@ -1,6 +1,7 @@
 import logging
 import os
 from typing import List, Optional
+from pathlib import Path
 
 from nfs.common.exceptions import BadRequestError, NotFoundError
 from nfs.common.requests import (EmptyRequest, FileUpdatedCallback,
@@ -57,8 +58,9 @@ class ALOServicer:
         path = req.get_path()
         offset = req.get_offset()
         data = req.get_data()
-        logger.info("Arguments - path: {}, offset: {}, data: {}".format(path, offset, data))
+        logger.debug("Arguments - path: {}, offset: {}, data: {}".format(path, offset, data))
         combined_path = os.path.join(self.root_dir, path)
+        logger.debug("Combined path: {}".format(combined_path))
         # If file does not exist on the server, returns error
         if not os.path.exists(combined_path):
             # TODO(ming): returns, instead of raising the error
@@ -92,7 +94,14 @@ class ALOServicer:
         return files
 
     def handle_touch(self, req: TouchRequest):
-        raise NotImplementedError
+        path = req.get_path()
+        logger.info("Arguments - path: {}".format(path))
+        combined_path = os.path.join(self.root_dir, path)
+        logger.debug("Combined path: {}".format(combined_path))
+        Path(path).touch()
+        atime = int(os.path.getctime(combined_path))
+        # Returns access time (timestamp) to the client upon successful touch
+        return [Int64(atime)]
 
     def handle_register(self, req: RegisterRequest, addr):
         raise NotImplementedError
