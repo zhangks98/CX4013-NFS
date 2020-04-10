@@ -81,7 +81,16 @@ class ALOServicer:
         return [Int32(1)]
 
     def handle_get_attr(self, req: GetAttrRequest):
-        raise NotImplementedError
+        path = req.get_path()
+        logger.debug("Arguments - path: {}".format(path))
+        combined_path = os.path.join(self.root_dir, path)
+        logger.debug("Combined path: {}".format(combined_path))
+        if not os.path.exists(combined_path):
+            # TODO(ming): returns, instead of raising the error
+            raise NotFoundError
+        atime = int(os.path.getatime(combined_path))
+        mtime = int(os.path.getmtime(combined_path))
+        return [Int64(mtime), Int64(atime)]
 
     def handle_list_dir(self, req: ListDirRequest):
         path = req.get_path()
@@ -95,11 +104,11 @@ class ALOServicer:
 
     def handle_touch(self, req: TouchRequest):
         path = req.get_path()
-        logger.info("Arguments - path: {}".format(path))
+        logger.debug("Arguments - path: {}".format(path))
         combined_path = os.path.join(self.root_dir, path)
         logger.debug("Combined path: {}".format(combined_path))
         Path(path).touch()
-        atime = int(os.path.getctime(combined_path))
+        atime = int(os.path.getatime(combined_path))
         # Returns access time (timestamp) to the client upon successful touch
         return [Int64(atime)]
 
