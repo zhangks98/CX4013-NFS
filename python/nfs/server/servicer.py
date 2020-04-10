@@ -40,7 +40,22 @@ class ALOServicer:
         return []
 
     def handle_read(self, req: ReadRequest):
-        raise NotImplementedError
+        path = req.get_path()
+        offset = req.get_offset()
+        count = req.get_count()
+        logger.debug("Arguments: path={}, offset={}, count={}".format(path, offset, count))
+        combined_path = os.path.join(self.root_dir, path)
+        logger.debug("Combined path: {}".format(combined_path))
+        # Check whether file_path exists
+        if not os.path.exists(combined_path):
+            raise NotFoundError('{} does not exist'.format(path))
+        # TODO(ming): check whether file_path points to a file, not a directory; what if there's a directory with the
+        #  same name as the file?
+        with open(combined_path) as f:
+            f.seek(offset)
+            content = f.read(count)
+            logger.debug("content {}".format(content))
+        return [Str(content)]
 
     def handle_write(self, req: WriteRequest):
         raise NotImplementedError
