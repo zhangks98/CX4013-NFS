@@ -75,7 +75,7 @@ class AMOServicer(ALOServicer):
         return str(req.get_id()) + ":" + str(addr);
 
     # TODO(ming): use explicit type for addr
-    def _is_duplicate_request(self, req: Request, addr: any) -> Optional[Response]:
+    def _is_duplicate_request(self, req: Request, addr: any) -> Optional[List[Value]]:
         identifier = self._create_identifier(req, addr);
         if identifier not in self.historyMap:
             return None

@@ -35,3 +35,5 @@ desktop.ini
 .DS_Store
 .Spotlight-V100
 .Trashes
+# Python Virual Environment
+python/venv
