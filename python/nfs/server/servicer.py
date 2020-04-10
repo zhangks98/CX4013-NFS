@@ -41,24 +41,42 @@ class ALOServicer:
 
     def handle_read(self, req: ReadRequest):
         path = req.get_path()
-        offset = req.get_offset()
-        count = req.get_count()
-        logger.debug("Arguments: path={}, offset={}, count={}".format(path, offset, count))
+        logger.debug("path: {}".format(path))
         combined_path = os.path.join(self.root_dir, path)
         logger.debug("Combined path: {}".format(combined_path))
         # Check whether file_path exists
         if not os.path.exists(combined_path):
             raise NotFoundError('{} does not exist'.format(path))
-        # TODO(ming): check whether file_path points to a file, not a directory; what if there's a directory with the
-        #  same name as the file?
+        # TODO(ming): check whether file_path points to a file, not a directory;
+        #  what if there's a directory with the same name as the file?
         with open(combined_path) as f:
-            f.seek(offset)
-            content = f.read(count)
-            logger.debug("content {}".format(content))
+            content = f.read()
         return [Str(content)]
 
     def handle_write(self, req: WriteRequest):
-        raise NotImplementedError
+        path = req.get_path()
+        offset = req.get_offset()
+        data = req.get_data()
+        logger.info("Arguments - path: {}, offset: {}, data: {}".format(path, offset, data))
+        combined_path = os.path.join(self.root_dir, path)
+        # If file does not exist on the server, returns error
+        if not os.path.exists(combined_path):
+            # TODO(ming): returns, instead of raising the error
+            raise NotFoundError
+        # If offset exceeds the file length, returns error
+        if offset > os.path.getsize(combined_path):
+            # TODO(ming): returns, instead of raising the error
+            raise Exception
+        with open(combined_path, "ab+") as f:
+            f.seek(offset)
+            remaining_content = f.read()  # Save the content after offset
+            f.seek(0)
+            f.read(offset)
+            f.truncate()  # Remove the content after offset
+            f.write(data)  # Append the data
+            f.write(remaining_content)  # Append the remaining content
+        # Returns an acknowledgement to the client upon successful write
+        return [Int32(1)]
 
     def handle_get_attr(self, req: GetAttrRequest):
         raise NotImplementedError
