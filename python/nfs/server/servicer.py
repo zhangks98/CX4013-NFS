@@ -1,6 +1,6 @@
 import logging
 import os
-from typing import List
+from typing import List, Optional
 
 from nfs.common.exceptions import BadRequestError, NotFoundError
 from nfs.common.requests import (EmptyRequest, FileUpdatedCallback,
@@ -68,3 +68,26 @@ class ALOServicer:
 class AMOServicer(ALOServicer):
     def __init__(self, root_dir, sock):
         super().__init__(root_dir, sock)
+        self.historyMap = {}
+
+    # TODO(ming): use explicit type for addr
+    def _create_identifier(self, req: Request, addr: any) -> str:
+        return str(req.get_id()) + ":" + str(addr);
+
+    # TODO(ming): use explicit type for addr
+    def _is_duplicate_request(self, req: Request, addr: any) -> Optional[Response]:
+        identifier = self._create_identifier(req, addr);
+        if identifier not in self.historyMap:
+            return None
+        return self.historyMap[identifier]
+
+    def handle(self, req, addr) -> List[Value]:
+        stored_res = self._is_duplicate_request(req, addr)
+        if stored_res is not None:
+            return stored_res
+        # Call handle from parent class
+        res = super().handle(req, addr)
+        identifier = self._create_identifier(req, addr)
+        # Save it to history
+        self.historyMap[identifier] = res
+        return res
