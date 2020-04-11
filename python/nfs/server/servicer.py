@@ -1,6 +1,7 @@
 import logging
 import os
 from typing import List, Optional
+from pathlib import Path
 
 from nfs.common.exceptions import BadRequestError, NotFoundError
 from nfs.common.requests import (EmptyRequest, FileUpdatedCallback,
@@ -40,13 +41,53 @@ class ALOServicer:
         return []
 
     def handle_read(self, req: ReadRequest):
-        raise NotImplementedError
+        path = req.get_path()
+        logger.debug("path: {}".format(path))
+        combined_path = os.path.join(self.root_dir, path)
+        logger.debug("Combined path: {}".format(combined_path))
+        # Check whether file_path exists
+        if not os.path.exists(combined_path):
+            raise NotFoundError('File {} does not exist on the server'.format(path))
+        # TODO(ming): check whether file_path points to a file, not a directory;
+        #  what if there's a directory with the same name as the file?
+        with open(combined_path, 'rb') as f:
+            content = f.read()
+        return [Bytes(content)]
 
     def handle_write(self, req: WriteRequest):
-        raise NotImplementedError
+        path = req.get_path()
+        offset = req.get_offset()
+        data = req.get_data()
+        logger.debug("Arguments - path: {}, offset: {}, data: {}".format(path, offset, data))
+        combined_path = os.path.join(self.root_dir, path)
+        logger.debug("Combined path: {}".format(combined_path))
+        # If file does not exist on the server, returns error
+        if not os.path.exists(combined_path):
+            raise NotFoundError('File {} does not exist on the server'.format(path))
+        # If offset exceeds the file length, returns error
+        file_size = os.path.getsize(combined_path)
+        if offset > file_size:
+            raise BadRequestError("Offset {} exceeds the file length {}".format(offset, file_size))
+        with open(combined_path, "ab+") as f:
+            f.seek(offset)
+            remaining_content = f.read()  # Save the content after offset
+            f.seek(offset)
+            f.truncate()  # Remove the content after offset
+            f.write(data)  # Append the data
+            f.write(remaining_content)  # Append the remaining content
+        # Returns an acknowledgement to the client upon successful write
+        return [Int32(1)]
 
     def handle_get_attr(self, req: GetAttrRequest):
-        raise NotImplementedError
+        path = req.get_path()
+        logger.debug("Arguments - path: {}".format(path))
+        combined_path = os.path.join(self.root_dir, path)
+        logger.debug("Combined path: {}".format(combined_path))
+        if not os.path.exists(combined_path):
+            raise NotFoundError('File {} does not exist on the server'.format(path))
+        atime = int(os.path.getatime(combined_path))
+        mtime = int(os.path.getmtime(combined_path))
+        return [Int64(mtime), Int64(atime)]
 
     def handle_list_dir(self, req: ListDirRequest):
         path = req.get_path()
@@ -59,7 +100,14 @@ class ALOServicer:
         return files
 
     def handle_touch(self, req: TouchRequest):
-        raise NotImplementedError
+        path = req.get_path()
+        logger.debug("Arguments - path: {}".format(path))
+        combined_path = os.path.join(self.root_dir, path)
+        logger.debug("Combined path: {}".format(combined_path))
+        Path(path).touch()
+        atime = int(os.path.getatime(combined_path))
+        # Returns access time (timestamp) to the client upon successful touch
+        return [Int64(atime)]
 
     def handle_register(self, req: RegisterRequest, addr):
         raise NotImplementedError
