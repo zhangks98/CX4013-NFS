@@ -1,7 +1,7 @@
 import logging
 import os
-from typing import List, Optional
 from pathlib import Path
+from typing import List, Optional
 
 from nfs.common.exceptions import BadRequestError, NotFoundError
 from nfs.common.requests import (EmptyRequest, FileUpdatedCallback,
@@ -76,7 +76,7 @@ class ALOServicer:
             f.write(data)  # Append the data
             f.write(remaining_content)  # Append the remaining content
         # Returns an acknowledgement to the client upon successful write
-        return [Int32(1)]
+        return []
 
     def handle_get_attr(self, req: GetAttrRequest):
         path = req.get_path()
@@ -120,11 +120,11 @@ class AMOServicer(ALOServicer):
 
     # TODO(ming): use explicit type for addr
     def _create_identifier(self, req: Request, addr: any) -> str:
-        return str(req.get_id()) + ":" + str(addr);
+        return str(req.get_id()) + ":" + str(addr)
 
     # TODO(ming): use explicit type for addr
     def _is_duplicate_request(self, req: Request, addr: any) -> Optional[List[Value]]:
-        identifier = self._create_identifier(req, addr);
+        identifier = self._create_identifier(req, addr)
         if identifier not in self.historyMap:
             return None
         return self.historyMap[identifier]

@@ -19,7 +19,7 @@ def main():
     """The main function.\n
     Usage: `main.py [-h] -m {ALO,AMO} port path`\n
     Example: python main.py -m AMO 2222 .
-    
+
     :raises OSError: [description]
     :raises RuntimeError: [description]
     """
