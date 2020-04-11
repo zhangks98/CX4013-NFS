@@ -54,8 +54,7 @@ public class Proxy {
     public void write(String file_path, int offset, byte[] data) throws IOException {
         Response res = invoke(new WriteRequest(file_path, offset, data));
         if (res.getStatus() == ResponseStatus.OK) {
-            int num_bytes_written = (int) res.getValues().get(0).getVal();
-            System.out.println(num_bytes_written + " bytes written to " + file_path);
+            System.out.println("Success");
         } else {
             logger.warn("Error write: response status" + res.getStatus().toString());
         }
