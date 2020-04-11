@@ -1,7 +1,7 @@
 import logging
 import os
-from typing import List, Optional
 from pathlib import Path
+from typing import List, Optional
 
 from nfs.common.exceptions import BadRequestError, NotFoundError
 from nfs.common.requests import (EmptyRequest, FileUpdatedCallback,

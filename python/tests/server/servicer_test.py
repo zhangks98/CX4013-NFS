@@ -1,9 +1,12 @@
+from unittest import mock
+
 import pytest
 from pyfakefs.fake_filesystem import FakeFilesystem
-from nfs.server.servicer import AMOServicer, ALOServicer
-from nfs.common.requests import EmptyRequest, ReadRequest, WriteRequest, TouchRequest, GetAttrRequest
-from nfs.common.values import Str, Int32, Bytes
-from unittest import mock
+
+from nfs.common.requests import (EmptyRequest, GetAttrRequest, ReadRequest,
+                                 TouchRequest, WriteRequest)
+from nfs.common.values import Bytes, Int32, Str
+from nfs.server.servicer import ALOServicer, AMOServicer
 
 mock_socket = mock.Mock()
 mock_socket.recv.return_value = []
@@ -70,6 +73,7 @@ class TestALOServier:
         val_b = self.servicer.handle(req, addr)
         assert get_memory_addr(val_a) != get_memory_addr(val_b)
 
+
 class TestAMOServicer:
     def setup_method(self):
         self.servicer = AMOServicer(".", mock_socket)
@@ -82,4 +86,3 @@ class TestAMOServicer:
         assert self.servicer._is_duplicate_request(req, addr) is not None
         val_b = self.servicer.handle(req, addr)
         assert get_memory_addr(val_a) == get_memory_addr(val_b)
-
