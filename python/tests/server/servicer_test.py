@@ -51,9 +51,9 @@ class TestALOServier:
         req.add_param(Bytes(b'INSERT'))
         addr = "localhost"
         self.servicer.handle(req, addr)
-        with open('test.txt') as f:
+        with open('test.txt', 'rb') as f:
             content = f.read()
-            assert content == 'teINSERTst'
+            assert content == b'teINSERTst'
 
     def test_handle_read(self, fs: FakeFilesystem):
         fs.create_file('test.txt', contents='test')
@@ -61,7 +61,7 @@ class TestALOServier:
         req.add_param(Str("test.txt"))  # Path
         addr = "localhost"
         val = self.servicer.handle(req, addr)
-        assert val[0].get_val() == 'test'
+        assert val[0].get_val() == b'test'
 
     def test_duplicate_request(self):
         req = EmptyRequest(0)
