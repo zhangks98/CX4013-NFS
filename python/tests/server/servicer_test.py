@@ -1,5 +1,8 @@
+import pytest
+from pyfakefs.fake_filesystem import FakeFilesystem
 from nfs.server.servicer import AMOServicer, ALOServicer
-from nfs.common.requests import EmptyRequest
+from nfs.common.requests import EmptyRequest, ReadRequest, WriteRequest
+from nfs.common.values import Str, Int32, Bytes
 from unittest import mock
 
 mock_socket = mock.Mock()
@@ -16,6 +19,16 @@ def get_memory_addr(var):
 class TestALOServier:
     def setup_method(self):
         self.servicer = ALOServicer(".", mock_socket)
+
+    def test_handle_read(self, fs: FakeFilesystem):
+        fs.create_file('test.txt', contents='test')
+        req = ReadRequest(0)
+        req.add_param(Int32(0))  # Offset
+        req.add_param(Int32(0))  # Count
+        req.add_param(Str("test.txt"))  # Path
+        addr = "localhost"
+        val = self.servicer.handle(req, addr)
+        assert val[0].get_val() == 'test'
 
     def test_duplicate_request(self):
         req = EmptyRequest(0)
