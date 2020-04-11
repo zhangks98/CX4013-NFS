@@ -13,8 +13,8 @@ class RequestName(bytes, Enum):
         obj.num_params = num_params
         return obj
     EMPTY = (0, 0)
-    READ = (1, 3)
-    WRITE = (2, 4)
+    READ = (1, 1)
+    WRITE = (2, 3)
     GET_ATTR = (3, 1)
     LIST_DIR = (4, 1)
     TOUCH = (5, 1)
@@ -110,13 +110,7 @@ class ReadRequest(Request):
         super().__init__(id, RequestName.READ)
 
     def get_path(self) -> str:
-        return self.get_param(2).get_val()
-
-    def get_offset(self) -> int:
         return self.get_param(0).get_val()
-
-    def get_count(self) -> int:
-        return self.get_param(1).get_val()
 
 
 class WriteRequest(Request):
@@ -124,16 +118,13 @@ class WriteRequest(Request):
         super().__init__(id, RequestName.WRITE)
 
     def get_path(self) -> str:
-        return self.get_param(2).get_val()
+        return self.get_param(1).get_val()
 
     def get_offset(self) -> int:
         return self.get_param(0).get_val()
 
-    def get_count(self) -> int:
-        return self.get_param(1).get_val()
-
     def get_data(self) -> bytes:
-        return self.get_param(3).get_val()
+        return self.get_param(2).get_val()
 
 
 class GetAttrRequest(Request):
