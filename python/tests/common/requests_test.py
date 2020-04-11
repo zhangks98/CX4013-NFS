@@ -68,30 +68,22 @@ def test_unmarshal_EmptyRequest():
 
 def test_unmarshal_ReadRequest():
     req_id = 1
-    offset = 2
-    count = 3
     path = 'abc.txt'
     expected = ReadRequest(req_id)
-    expected.add_param(Int32(offset))
-    expected.add_param(Int32(count))
     expected.add_param(Str(path))
     actual = Request.from_bytes(expected.to_bytes())
     assert actual.get_id() == req_id
     assert actual.get_name() == RequestName.READ
     assert actual.get_path() == path
-    assert actual.get_offset() == offset
-    assert actual.get_count() == count
 
 
 def test_unmarshal_WriteRequest():
     req_id = 4
     offset = 5
-    count = 6
     path = 'abc.txt'
     data = bytes([0xd, 0xe, 0xf])
     expected = WriteRequest(req_id)
     expected.add_param(Int32(offset))
-    expected.add_param(Int32(count))
     expected.add_param(Str(path))
     expected.add_param(Bytes(data))
     actual = Request.from_bytes(expected.to_bytes())
@@ -99,7 +91,6 @@ def test_unmarshal_WriteRequest():
     assert actual.get_name() == RequestName.WRITE
     assert actual.get_path() == path
     assert actual.get_offset() == offset
-    assert actual.get_count() == count
     assert actual.get_data() == data
 
 

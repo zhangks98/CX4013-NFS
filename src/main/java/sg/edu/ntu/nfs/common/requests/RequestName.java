@@ -2,8 +2,8 @@ package sg.edu.ntu.nfs.common.requests;
 
 public enum RequestName {
     EMPTY(0),
-    READ(3),
-    WRITE(4),
+    READ(1),
+    WRITE(3),
     GET_ATTR(1),
     LIST_DIR(1),
     TOUCH(1),

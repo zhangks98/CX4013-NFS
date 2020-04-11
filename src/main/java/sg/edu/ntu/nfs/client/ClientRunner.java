@@ -89,8 +89,8 @@ public class ClientRunner implements Callable<Integer> {
                     file_op.read(command[1], Integer.parseInt(command[2]), Integer.parseInt(command[3]));
 
             } else if (command[0].equals("write")) {
-                if (validateLength(command, 5) && containsNum(command[2]) && containsNum(command[3]))
-                    stub.write(command[1], Integer.parseInt(command[2]), Integer.parseInt(command[3]), command[4].getBytes());
+                if (validateLength(command, 4) && containsNum(command[2]))
+                    stub.write(command[1], Integer.parseInt(command[2]), command[3].getBytes());
 
             } else if (command[0].equals("touch")) {
                 if (validateLength(command, 2))
