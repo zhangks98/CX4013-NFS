@@ -56,32 +56,26 @@ public class RequestTest {
     @Test
     public void marshallReadRequest() throws InvalidClassException, InvalidObjectException {
         String path = "world.txt";
-        int offset = 1;
-        int count = 2;
-        ReadRequest expected = new ReadRequest(path, offset, count);
+        ReadRequest expected = new ReadRequest(path);
         byte[] serialized = expected.toBytes();
         ReadRequest actual = (ReadRequest) RequestBuilder.parseFrom(serialized);
         assertEquals(expected.getId(), actual.getId());
         assertEquals(RequestName.READ, actual.getName());
         assertEquals(path, actual.getPath());
-        assertEquals(offset, actual.getOffset());
-        assertEquals(count, actual.getCount());
     }
 
     @Test
     public void marshallWriteRequest() throws InvalidClassException, InvalidObjectException {
         String path = "abc.txt";
         int offset = 1;
-        int count = 2;
         byte[] data = new byte[]{0xd, 0xe, 0xf};
-        WriteRequest expected = new WriteRequest(path, offset, count, data);
+        WriteRequest expected = new WriteRequest(path, offset, data);
         byte[] serialized = expected.toBytes();
         WriteRequest actual = (WriteRequest) RequestBuilder.parseFrom(serialized);
         assertEquals(expected.getId(), actual.getId());
         assertEquals(RequestName.WRITE, actual.getName());
         assertEquals(path, actual.getPath());
         assertEquals(offset, actual.getOffset());
-        assertEquals(count, actual.getCount());
         assertArrayEquals(data, actual.getData());
     }
 

@@ -7,7 +7,6 @@ import sg.edu.ntu.nfs.common.responses.*;
 import sg.edu.ntu.nfs.common.values.Value;
 
 import java.io.IOException;
-import java.io.InvalidClassException;
 import java.net.*;
 import java.util.Optional;
 
@@ -33,7 +32,7 @@ public class Proxy {
      * @return file content in bytes
      */
     public Optional<byte[]> requestFile(String file_path) throws IOException {
-        Response res = invoke(new ReadRequest(file_path, 0, 0));
+        Response res = invoke(new ReadRequest(file_path));
         Optional<byte[]> opt_content = Optional.empty();
 
         if (res.getStatus() == ResponseStatus.OK) {
@@ -50,11 +49,10 @@ public class Proxy {
      * print the number of bytes written
      * @param file_path file path on server
      * @param offset offset of content insertion, measured in number of bytes
-     * @param count number of bytes to write
      * @param data bytes to write
      */
-    public void write(String file_path, int offset, int count, byte[] data) throws IOException {
-        Response res = invoke(new WriteRequest(file_path, offset, count, data));
+    public void write(String file_path, int offset, byte[] data) throws IOException {
+        Response res = invoke(new WriteRequest(file_path, offset, data));
         if (res.getStatus() == ResponseStatus.OK) {
             int num_bytes_written = (int) res.getValues().get(0).getVal();
             System.out.println(num_bytes_written + " bytes written to " + file_path);
