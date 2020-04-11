@@ -23,8 +23,6 @@ class TestALOServier:
     def test_handle_read(self, fs: FakeFilesystem):
         fs.create_file('test.txt', contents='test')
         req = ReadRequest(0)
-        req.add_param(Int32(0))  # Offset
-        req.add_param(Int32(0))  # Count
         req.add_param(Str("test.txt"))  # Path
         addr = "localhost"
         val = self.servicer.handle(req, addr)
