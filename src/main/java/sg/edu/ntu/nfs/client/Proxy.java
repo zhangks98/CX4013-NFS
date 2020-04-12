@@ -17,7 +17,7 @@ public class Proxy {
     private final InetAddress address;
     private final int port;
     private DatagramSocket socket;
-    private int timeout = 1000; // in milliseconds
+    private int timeout = 500; // in milliseconds
     private int max_recv_attempts = 5;
 
     public Proxy(InetAddress address, int port) throws SocketException {
@@ -28,11 +28,11 @@ public class Proxy {
 
     /**
      * Send a read request to the server
-     * @param file_path file path on server
+     * @param filePath file path on server
      * @return file content in bytes
      */
-    public Optional<byte[]> requestFile(String file_path) throws IOException {
-        Response res = invoke(new ReadRequest(file_path));
+    public Optional<byte[]> requestFile(String filePath) throws IOException {
+        Response res = invoke(new ReadRequest(filePath));
         Optional<byte[]> opt_content = Optional.empty();
 
         if (res.getStatus() == ResponseStatus.OK) {
@@ -47,12 +47,12 @@ public class Proxy {
     /**
      * Send a write request to the server
      * print the number of bytes written
-     * @param file_path file path on server
+     * @param filePath file path on server
      * @param offset offset of content insertion, measured in number of bytes
      * @param data bytes to write
      */
-    public void write(String file_path, int offset, byte[] data) throws IOException {
-        Response res = invoke(new WriteRequest(file_path, offset, data));
+    public void write(String filePath, int offset, byte[] data) throws IOException {
+        Response res = invoke(new WriteRequest(filePath, offset, data));
         if (res.getStatus() == ResponseStatus.OK) {
             System.out.println("Success");
         } else {
@@ -64,13 +64,13 @@ public class Proxy {
      * Request to touch a file on the server
      * if file exists, last modified time of the file will be returned
      * otherwise, file will be created on the server
-     * @param file_path file path on server
+     * @param filePath file path on server
      */
-    public void touch(String file_path) throws IOException {
-        Response res = invoke(new TouchRequest(file_path));
+    public void touch(String filePath) throws IOException {
+        Response res = invoke(new TouchRequest(filePath));
         if (res.getStatus() == ResponseStatus.OK) {
             long atime = (long) res.getValues().get(0).getVal();
-            System.out.println(file_path + "   Last accessed at: " + atime);
+            System.out.println(filePath + "   Last accessed at: " + atime);
         } else {
             logger.warn("Error touch: response status " + res.getStatus().toString());
         }
@@ -94,11 +94,11 @@ public class Proxy {
 
     /**
      * Send a request to register for updates of a file on server
-     * @param file_path file path on server
+     * @param filePath file path on server
      * @param monitor_interval duration for monitor file updates
      */
-    public void register(String file_path, int monitor_interval) throws IOException {
-        Response res = invoke(new RegisterRequest(file_path, monitor_interval));
+    public void register(String filePath, int monitor_interval) throws IOException {
+        Response res = invoke(new RegisterRequest(filePath, monitor_interval));
         if (res.getStatus() == ResponseStatus.OK) {
             logger.info("Successfully registered");
         } else {
@@ -108,11 +108,11 @@ public class Proxy {
 
     /**
      * Request the last access time and last modified time of a file on the server
-     * @param file_path file path on server
+     * @param filePath file path on server
      * @return last modified time and last access time of the file
      */
-    public Optional<long[]> getAttr(String file_path) throws IOException {
-        Response res = invoke(new GetAttrRequest(file_path));
+    public Optional<long[]> getAttr(String filePath) throws IOException {
+        Response res = invoke(new GetAttrRequest(filePath));
         Optional<long[]> opt_times = Optional.empty();
 
         if (res.getStatus() == ResponseStatus.OK){

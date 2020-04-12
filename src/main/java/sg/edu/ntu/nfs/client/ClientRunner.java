@@ -2,28 +2,28 @@ package sg.edu.ntu.nfs.client;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import picocli.CommandLine;
-import picocli.CommandLine.Command;
-import picocli.CommandLine.Parameters;
 
 import java.io.IOException;
 import java.net.InetAddress;
-import java.net.SocketException;
-import java.net.SocketTimeoutException;
 import java.util.Scanner;
 import java.util.concurrent.Callable;
 
-@Command(description = "The client for remote file access.", name = "client", mixinStandardHelpOptions = true)
 public class ClientRunner implements Callable<Integer> {
     private static final Logger logger = LogManager.getLogger();
     Scanner sc = new Scanner(System.in);
     FileOperations file_op;
     Proxy stub;
     CacheHandler cache_handler;
-    @Parameters(index = "0", description = "The address of the file server.")
+
     private InetAddress address;
-    @Parameters(index = "1", description = "The port of the file server.")
     private int port;
+    private long freshness_interval;
+
+    public ClientRunner(InetAddress address, int port, long freshness_interval) {
+        this.address = address;
+        this.port = port;
+        this.freshness_interval = freshness_interval;
+    }
 
     String interface_msg = "\n============= Client User Interface ============\n"
             + "The following commands are available:     \n"
@@ -36,12 +36,6 @@ public class ClientRunner implements Callable<Integer> {
             + "| ls [dir]                                |\n"
             + "| help                                    |\n"
             + "| exit                                    |";
-
-
-    public static void main(String... args) {
-        int exitCode = new CommandLine(new ClientRunner()).execute(args);
-        System.exit(exitCode);
-    }
 
     /**
      * Check if an input string is a string of integer
@@ -122,14 +116,13 @@ public class ClientRunner implements Callable<Integer> {
     public Integer call() throws Exception {
         stub = new Proxy(address, port);
         // init cache with freshness interval.
-        cache_handler = new CacheHandler(stub, 1000);
+        cache_handler = new CacheHandler(stub, freshness_interval);
         file_op = new FileOperations(cache_handler);
 
         System.out.println(interface_msg);
         System.out.println();
 
         while (true) {
-            System.out.print("$ ");
             String user_input = sc.nextLine();
             if (user_input.trim().equals("exit"))
                 break;
