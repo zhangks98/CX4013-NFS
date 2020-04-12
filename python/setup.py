@@ -1,7 +1,7 @@
-from setuptools import setup, find_packages
-from os import path
+from setuptools import find_packages, setup
+
 setup(
-    name="nfs-server", 
+    name="nfs-server",
     description='The server for remote file access',
     url='https://github.com/zhangks98/CX4013-NFS',
     version='1.0.0',
