@@ -13,7 +13,7 @@ import java.net.SocketTimeoutException;
 import java.util.Scanner;
 import java.util.concurrent.Callable;
 
-@Command(description = "The client for remote file access.", name = "client", mixinStandardHelpOptions = true)
+@Command(description = "The client for remote file access.", name = "nfs-client", mixinStandardHelpOptions = true)
 public class ClientRunner implements Callable<Integer> {
     private static final Logger logger = LogManager.getLogger();
     Scanner sc = new Scanner(System.in);

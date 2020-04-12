@@ -9,6 +9,9 @@ gradle-app.setting
 .gradletasknamecache
 # VSCode
 .vscode/*
+# Distribution / packaging
+*.egg-info/
+*.egg
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
