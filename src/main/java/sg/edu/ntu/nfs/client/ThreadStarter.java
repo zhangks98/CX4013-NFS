@@ -18,16 +18,14 @@ import java.util.concurrent.Future;
 public class ThreadStarter implements Callable<Integer> {
 
     // For Run Configuration:
-    // program param example: localhost 8888 0 10000
+    // program param example: localhost 8888 10000
 
     @Parameters(index = "0", description = "The address of the file server.")
     private InetAddress address;
     @Parameters(index = "1", description = "The port of the file server.")
     private int server_port;
-    @Parameters(index = "2", description = "The port of the callback recipient on the file server.")
-    private int callback_port;
-    @Parameters(index = "3", description = "Freshness interval for files in the client cache")
-    private int freshness_interval;
+    @Parameters(index = "2", description = "Freshness interval for files in the client cache")
+    private long freshness_interval;
 
     private static final Logger logger = LogManager.getLogger();
 
@@ -39,7 +37,7 @@ public class ThreadStarter implements Callable<Integer> {
         try {
             executorService = Executors.newFixedThreadPool(2);
             ClientRunner clientRunner = new ClientRunner(address, server_port, freshness_interval);
-            CallbackReceiver callbackReceiver = new CallbackReceiver(callback_port);
+            CallbackReceiver callbackReceiver = new CallbackReceiver();
 
             Future<Integer> client_future = executorService.submit(clientRunner);
             Future<Integer> callback_future = executorService.submit(callbackReceiver);

@@ -14,20 +14,17 @@ import static sg.edu.ntu.nfs.common.Serializer.BUF_SIZE;
 
 public class CallbackReceiver implements Callable<Integer> {
     private static final Logger logger = LogManager.getLogger();
-    private int port;
 
     private DatagramSocket socket;
     private CallbackHandler callbackHandler;
 
-    public CallbackReceiver(int port) {
-        this.port = port;
-    }
+    public CallbackReceiver() {}
 
     @Override
     public Integer call() throws Exception {
-        socket = new DatagramSocket(port);
+        socket = new DatagramSocket();
         callbackHandler = new CallbackHandler();
-        logger.info(String.format("Callback receiver running at port %d", port));
+        logger.info("Callback receiver running ...");
         serve();
         return 0;
     }
