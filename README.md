@@ -25,7 +25,7 @@ Course Project for CX4013 Distributed Systems at Nanyang Technological Universit
 
 - Create a Python (>=3.7) [virtual environment](https://virtualenv.pypa.io/en/latest):
 
-`virtualenv --system-site-packages -p python3 ./venv`
+`virtualenv -p python3 ./venv`
 
 - Activate the virtual environment:
   - On Linux/macOS: `source ./venv/bin/activate`
