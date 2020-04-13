@@ -8,9 +8,9 @@ public class CacheHandler {
     static Cache cache; // only one instance
     private final Proxy stub;
 
-    public CacheHandler(Proxy stub, long fresh_interval) {
+    public CacheHandler(Proxy stub, long freshInterval) {
         this.stub = stub;
-        cache = new Cache(fresh_interval);
+        cache = new Cache(freshInterval);
     }
 
     /**
@@ -21,42 +21,42 @@ public class CacheHandler {
      * @return file content in bytes
      */
     public Optional<byte[]> getFile(String filePath) throws IOException {
-        Optional<byte[]> opt_content;
+        Optional<byte[]> optContent;
 
         // not in cache
         if (cache.exists(filePath)) {
-            opt_content = stub.requestFile(filePath);
+            optContent = stub.requestFile(filePath);
             // file found on server
-            if (opt_content.isPresent()) {
-                byte[] file_content = opt_content.get();
-                long t_mclient = System.currentTimeMillis();
-                long t_c = System.currentTimeMillis();
-                cache.addFile(filePath, file_content, t_mclient, t_c);
+            if (optContent.isPresent()) {
+                byte[] fileContent = optContent.get();
+                long tMclient = System.currentTimeMillis();
+                long tC = System.currentTimeMillis();
+                cache.addFile(filePath, fileContent, tMclient, tC);
             }
         }
         else {
             CacheEntry entry = cache.getFile(filePath);
             // check freshness upon access
-            if (System.currentTimeMillis() - entry.getTc() >= cache.getFreshT()) {
-                Optional<long[]> opt_attr = stub.getAttr((filePath));
+            if (System.currentTimeMillis() - entry.getTc() >= cache.getFreshnessInterval()) {
+                Optional<long[]> optAttr = stub.getAttr((filePath));
 
-                if (opt_attr.isPresent()) {
-                    long[] attr = opt_attr.get();
-                    long t_mserver = attr[0];
+                if (optAttr.isPresent()) {
+                    long[] attr = optAttr.get();
+                    long tMserver = attr[0];
 
                     // invalid entry
-                    if (entry.getTmclient() < t_mserver) {
+                    if (entry.getTmclient() < tMserver) {
                         // update entry
-                        Optional<byte[]> opt_file = stub.requestFile(filePath);
+                        Optional<byte[]> optFile = stub.requestFile(filePath);
 
-                        if (opt_file.isPresent()) {
-                            byte[] file_content = opt_file.get();
+                        if (optFile.isPresent()) {
+                            byte[] fileContent = optFile.get();
 
                             // file still on server
-                            if (file_content != null) {
-                                long t_mclient = System.currentTimeMillis();
-                                long t_c = System.currentTimeMillis();
-                                cache.replaceFile(filePath, file_content, t_mclient, t_c);
+                            if (fileContent != null) {
+                                long tMclient = System.currentTimeMillis();
+                                long tC = System.currentTimeMillis();
+                                cache.replaceFile(filePath, fileContent, tMclient, tC);
                             }
                             // file no longer available on server
                             else
@@ -65,22 +65,22 @@ public class CacheHandler {
                     }
                 }
             }
-            opt_content = Optional.of(entry.getFileContent());
+            optContent = Optional.of(entry.getFileContent());
         }
-        return opt_content;
+        return optContent;
     }
 
     /**
      * Update a file on client: if cached, replace the old file, else add file
      * @param filePath file path on server
-     * @param new_content updated content of the file
+     * @param newContent updated content of the file
      */
-    public void updateFile(String filePath, byte[] new_content) {
+    public void updateFile(String filePath, byte[] newContent) {
         long now = System.currentTimeMillis();
         if (cache.exists(filePath)) {
-            cache.replaceFile(filePath, new_content, now, now);
+            cache.replaceFile(filePath, newContent, now, now);
         } else {
-            cache.addFile(filePath, new_content, now, now);
+            cache.addFile(filePath, newContent, now, now);
         }
     }
 

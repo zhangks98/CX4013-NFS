@@ -8,25 +8,36 @@ import sg.edu.ntu.nfs.common.requests.RequestBuilder;
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
-import java.util.concurrent.Callable;
 
 import static sg.edu.ntu.nfs.common.Serializer.BUF_SIZE;
 
-public class CallbackReceiver implements Callable<Integer> {
+public class CallbackReceiver extends Thread {
     private static final Logger logger = LogManager.getLogger();
-
     private DatagramSocket socket;
     private CallbackHandler callbackHandler;
+    private CacheHandler cacheHandler;
 
-    public CallbackReceiver() {}
+    public CallbackReceiver(CacheHandler cacheHandler) {
+        this.cacheHandler = cacheHandler;
+    }
+
+    /**
+     * Close the socket to terminate the thread
+     */
+    public void stopListening() {
+        socket.close();
+    }
 
     @Override
-    public Integer call() throws Exception {
-        socket = new DatagramSocket();
-        callbackHandler = new CallbackHandler();
-        logger.info("Callback receiver running ...");
-        serve();
-        return 0;
+    public void run() {
+        try {
+            socket = new DatagramSocket();
+            callbackHandler = new CallbackHandler(cacheHandler);
+            logger.info("Started callback receiver thread ...");
+            serve();
+        } catch (Exception e) {
+            logger.warn(e);
+        }
     }
 
     /**

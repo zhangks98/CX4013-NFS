@@ -1,43 +1,43 @@
 package sg.edu.ntu.nfs.client;
 
 public class CacheEntry {
-    private byte[] file_content = null;
-    private long t_c = 0;
-    private long t_mclient = 0;
+    private byte[] fileContent = null;
+    private long tC = 0;
+    private long tMclient = 0;
 
     /**
      * Entry in the client cache
-     * @param file_content file content of the entry.
-     * @param t_c          last validation time.
-     * @param t_mclient    last modification time.
+     * @param fileContent file content of the entry.
+     * @param tC          last validation time.
+     * @param tMclient    last modification time.
      */
-    public CacheEntry(byte[] file_content, long t_c, long t_mclient) {
-        this.file_content = file_content;
-        this.t_c = t_c;
-        this.t_mclient = t_mclient;
+    public CacheEntry(byte[] fileContent, long tC, long tMclient) {
+        this.fileContent = fileContent;
+        this.tC = tC;
+        this.tMclient = tMclient;
     }
 
     public byte[] getFileContent() {
-        return this.file_content;
+        return this.fileContent;
     }
 
-    public void setFileContent(byte[] new_content) {
-        this.file_content = new_content;
+    public void setFileContent(byte[] newContent) {
+        this.fileContent = newContent;
     }
 
     public long getTc() {
-        return this.t_c;
+        return this.tC;
     }
 
-    public void setTc(long new_tc) {
-        this.t_c = new_tc;
+    public void setTc(long newTc) {
+        this.tC = newTc;
     }
 
     public long getTmclient() {
-        return this.t_mclient;
+        return this.tMclient;
     }
 
-    public void setTmclient(long new_tmclient) {
-        this.t_mclient = new_tmclient;
+    public void setTmclient(long newTmclient) {
+        this.tMclient = newTmclient;
     }
 }

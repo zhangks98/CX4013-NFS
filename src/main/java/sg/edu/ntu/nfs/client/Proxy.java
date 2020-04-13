@@ -33,15 +33,15 @@ public class Proxy {
      */
     public Optional<byte[]> requestFile(String filePath) throws IOException {
         Response res = invoke(new ReadRequest(filePath));
-        Optional<byte[]> opt_content = Optional.empty();
+        Optional<byte[]> optContent = Optional.empty();
 
         if (res.getStatus() == ResponseStatus.OK) {
             byte[] content = (byte[]) res.getValues().get(0).getVal();
-            opt_content = Optional.of(content);
+            optContent = Optional.of(content);
         } else {
             logger.warn("Error read: response status " + res.getStatus().toString());
         }
-        return opt_content;
+        return optContent;
     }
 
     /**
@@ -69,8 +69,8 @@ public class Proxy {
     public void touch(String filePath) throws IOException {
         Response res = invoke(new TouchRequest(filePath));
         if (res.getStatus() == ResponseStatus.OK) {
-            long atime = (long) res.getValues().get(0).getVal();
-            System.out.println(filePath + "   Last accessed at: " + atime);
+            long aTime = (long) res.getValues().get(0).getVal();
+            System.out.println(filePath + "   Last accessed at: " + aTime);
         } else {
             logger.warn("Error touch: response status " + res.getStatus().toString());
         }
@@ -113,17 +113,17 @@ public class Proxy {
      */
     public Optional<long[]> getAttr(String filePath) throws IOException {
         Response res = invoke(new GetAttrRequest(filePath));
-        Optional<long[]> opt_times = Optional.empty();
+        Optional<long[]> optTimes = Optional.empty();
 
         if (res.getStatus() == ResponseStatus.OK){
-            long mtime = (long) res.getValues().get(0).getVal();
-            long atime = (long) res.getValues().get(1).getVal();
-            long[] times = {mtime, atime};
-            opt_times = Optional.of(times);
+            long mTime = (long) res.getValues().get(0).getVal();
+            long aTime = (long) res.getValues().get(1).getVal();
+            long[] times = {mTime, aTime};
+            optTimes = Optional.of(times);
         } else {
             logger.warn("Error get attributes: response status " + res.getStatus().toString());
         }
-        return opt_times;
+        return optTimes;
     }
 
     /**

@@ -11,8 +11,8 @@ public class FileOperations {
     private static final Logger logger = LogManager.getLogger();
     private final CacheHandler cache_handler;
 
-    public FileOperations(CacheHandler cache_handler) {
-        this.cache_handler = cache_handler;
+    public FileOperations(CacheHandler cacheHandler) {
+        this.cache_handler = cacheHandler;
     }
 
     /**
@@ -24,11 +24,11 @@ public class FileOperations {
      */
     public Optional<byte[]> read(String filePath, int offset, int count) throws IOException {
 
-        Optional<byte[]> opt_file = cache_handler.getFile(filePath);
-        Optional<byte[]> opt_slice = Optional.empty();
+        Optional<byte[]> optFile = cache_handler.getFile(filePath);
+        Optional<byte[]> optSlice = Optional.empty();
 
-        if (opt_file.isPresent()) {
-            byte[] file = opt_file.get();
+        if (optFile.isPresent()) {
+            byte[] file = optFile.get();
 
             if (file != null) {
                 if (offset >= file.length) {
@@ -37,19 +37,19 @@ public class FileOperations {
                 } else if (file.length - offset < count) {
                     byte[] slice = Arrays.copyOfRange(file, offset, file.length);
                     logger.warn("Count out of range, returning available bytes:\n" + slice.toString());
-                    opt_slice = Optional.of(slice);
+                    optSlice = Optional.of(slice);
 
                 } else {
                     byte[] slice = Arrays.copyOfRange(file, offset, offset + count);
                     logger.info(slice.toString());
-                    opt_slice = Optional.of(slice);
+                    optSlice = Optional.of(slice);
                 }
 
             } else {
                 logger.error(filePath + " is not found on server");
             }
         }
-        return opt_slice;
+        return optSlice;
     }
-    
+
 }
