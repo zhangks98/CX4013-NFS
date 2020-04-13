@@ -2,6 +2,7 @@
 package sg.edu.ntu.nfs.client;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Optional;
 import org.apache.logging.log4j.LogManager;
@@ -25,31 +26,21 @@ public class FileOperations {
     public Optional<byte[]> read(String file_path, int offset, int count) throws IOException {
 
         Optional<byte[]> opt_file = cache_handler.getFile(file_path);
-        Optional<byte[]> opt_slice = Optional.empty();
-
+        byte[] slice = null;
         if (opt_file.isPresent()) {
             byte[] file = opt_file.get();
-
-            if (file != null) {
-                if (offset >= file.length) {
-                    logger.warn("Offset out of range");
-
-                } else if (file.length - offset < count) {
-                    byte[] slice = Arrays.copyOfRange(file, offset, file.length);
-                    logger.warn("Count out of range, returning available bytes:\n" + slice.toString());
-                    opt_slice = Optional.of(slice);
-
-                } else {
-                    byte[] slice = Arrays.copyOfRange(file, offset, offset + count);
-                    logger.info(slice.toString());
-                    opt_slice = Optional.of(slice);
-                }
-
+            if (offset >= file.length) {
+                logger.warn("Offset out of range");
+            } else if (file.length - offset < count) {
+                slice = Arrays.copyOfRange(file, offset, file.length);
+                logger.warn("Count out of range, returning available bytes:\n" + slice.toString());
+                System.out.println(new String(slice, StandardCharsets.UTF_8));
             } else {
-                logger.error(file_path + " is not found on server");
+                slice = Arrays.copyOfRange(file, offset, offset + count);
+                System.out.println(new String(slice, StandardCharsets.UTF_8));
             }
         }
-        return opt_slice;
+        return Optional.ofNullable(slice);
     }
 
     /*
