@@ -2,41 +2,48 @@ package sg.edu.ntu.nfs.client;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import picocli.CommandLine;
+import picocli.CommandLine.Command;
+import picocli.CommandLine.Parameters;
 
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.Scanner;
+import java.util.concurrent.Callable;
 
-
-public class ClientRunner extends Thread {
-    private InetAddress address;
-    private int port;
-    private long freshness_interval;
-
+@Command(description = "The client for remote file access.", name = "nfs-client", mixinStandardHelpOptions = true)
+public class ClientRunner implements Callable<Integer> {
     private static final Logger logger = LogManager.getLogger();
     Scanner sc = new Scanner(System.in);
     FileOperations fileOp;
     Proxy stub;
-    static CacheHandler cacheHandler;
+    CacheHandler cacheHandler;
+    CallbackReceiver callbackReceiver;
 
-    public ClientRunner(InetAddress address, int port, long freshnessInterval) {
-        this.address = address;
-        this.port = port;
-        this.freshness_interval = freshnessInterval;
-    }
+    @Parameters(index = "0", description = "The address of the file server.")
+    private InetAddress address;
+    @Parameters(index = "1", description = "The port of the file server.")
+    private int port;
+    @Parameters(index = "2", description = "Freshness interval of the client cache")
+    private long freshness_interval;
 
-    String interfaceMsg = "\n============= Client User Interface ============\n"
+    String interfaceMsg = "\n================== Client User Interface =================\n"
             + "The following commands are available:     \n"
             + "<> - required arguments\n"
             + "[] - optional arguments\n\n"
-            + "| read <file_path> <offset> <count>       |\n"
-            + "| write <file_path> <offset> <data>       |\n"
-            + "| register <file_path> <monitor_interval> |\n"
-            + "| touch <new_file_path>                   |\n"
-            + "| ls [dir]                                |\n"
-            + "| help                                    |\n"
-            + "| exit                                    |";
+            + "| read <file path> <offset> <count>                  |\n"
+            + "| write <file path> <offset> <data>                  |\n"
+            + "| register <file path> <monitor interval (ms)>       |\n"
+            + "| touch <new file path>                              |\n"
+            + "| ls [dir]                                           |\n"
+            + "| help                                               |\n"
+            + "| exit                                               |";
+
+    public static void main(String... args) {
+        int exitCode = new CommandLine(new ClientRunner()).execute(args);
+        System.exit(exitCode);
+    }
 
     /**
      * Check if an input string is a string of integer
@@ -98,12 +105,16 @@ public class ClientRunner extends Thread {
                     stub.listDir(command[1]);
 
             } else if (command[0].equals("register")) {
-                if (validateLength(command, 3) && containsNum(command[2]))
-                    stub.register(command[1], Integer.parseInt(command[2]));
+                if (validateLength(command, 3) && containsNum(command[2])) {
+                    int monitorInterval = Integer.parseInt(command[2]);
+                    stub.register(command[1], monitorInterval);
+                    callbackReceiver.run(monitorInterval);
+                }
 
             } else if (command[0].equals("help")) {
                 System.out.println(interfaceMsg);
                 System.out.println();
+
             } else {
                 logger.warn("Invalid commands, please try again");
             }
@@ -113,63 +124,24 @@ public class ClientRunner extends Thread {
         }
     }
 
-    /**
-     * Run the client main thread till user inputs "exit"
-     */
-    public void run() {
-        logger.info("Started client runner thread");
+    @Override
+    public Integer call() throws Exception {
+        stub = new Proxy(address, port);
+        cacheHandler = new CacheHandler(stub, 1000);
+        fileOp = new FileOperations(cacheHandler);
+        callbackReceiver = new CallbackReceiver(cacheHandler);
 
-        try {
-            stub = new Proxy(address, port);
-            // init cache with freshness interval.
-            cacheHandler = new CacheHandler(stub, freshness_interval);
-            fileOp = new FileOperations(cacheHandler);
+        System.out.println(interfaceMsg);
+        System.out.println();
 
-            System.out.println(interfaceMsg);
-            System.out.println();
-
-            while (true) {
-                String user_input = sc.nextLine();
-                if (user_input.trim().equals("exit"))
-                    break;
-                String[] split_input = user_input.trim().split(" ");
-                processCommand(split_input);
-            }
-
-        } catch (Exception e) {
-            logger.warn(e);
-
-        } finally {
-            logger.info("client runner thread finished");
+        while (true) {
+            String userInput = sc.nextLine();
+            if (userInput.trim().equals("exit"))
+                break;
+            String[] split_input = userInput.trim().split(" ");
+            processCommand(split_input);
         }
-    }
 
-    /**
-     * Thread manager
-     * @param args program arguments
-     */
-    public static void main(String[] args) {
-
-        // For Run Configuration:
-        // program param example: localhost 8888 10000
-
-        try {
-            // start the client main thread
-            ClientRunner clientRunner = new ClientRunner(InetAddress.getByName(args[0]),
-                    Integer.parseInt(args[1]), Long.parseLong(args[2]));
-            clientRunner.start();
-
-            // start the callback receiver thread
-            CallbackReceiver callbackReceiver = new CallbackReceiver(cacheHandler);
-            callbackReceiver.start();
-
-            while (clientRunner.isAlive());
-            // terminate the callback receiver thread when the client main thread finishes
-            callbackReceiver.stopListening();
-            callbackReceiver.interrupt();
-
-        } catch (UnknownHostException e) {
-            logger.warn("Unknown host: " + e);
-        }
+        return 0;
     }
 }

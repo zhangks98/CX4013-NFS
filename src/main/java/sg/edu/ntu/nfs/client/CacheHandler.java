@@ -24,7 +24,7 @@ public class CacheHandler {
         Optional<byte[]> optContent;
 
         // not in cache
-        if (cache.exists(filePath)) {
+        if (!cache.exists(filePath)) {
             optContent = stub.requestFile(filePath);
             // file found on server
             if (optContent.isPresent()) {
@@ -36,6 +36,7 @@ public class CacheHandler {
         }
         else {
             CacheEntry entry = cache.getFile(filePath);
+            System.out.println((entry != null));
             // check freshness upon access
             if (System.currentTimeMillis() - entry.getTc() >= cache.getFreshnessInterval()) {
                 Optional<long[]> optAttr = stub.getAttr((filePath));

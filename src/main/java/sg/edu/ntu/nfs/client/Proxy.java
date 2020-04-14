@@ -16,9 +16,9 @@ public class Proxy {
     private static final Logger logger = LogManager.getLogger();
     private final InetAddress address;
     private final int port;
-    private DatagramSocket socket;
-    private int timeout = 500; // in milliseconds
-    private int max_recv_attempts = 5;
+    private final DatagramSocket socket;
+    private final int timeout = 500; // in milliseconds
+    private final int maxRecvAttempts = 5;
 
     public Proxy(InetAddress address, int port) throws SocketException {
         this.address = address;
@@ -28,6 +28,7 @@ public class Proxy {
 
     /**
      * Send a read request to the server
+     *
      * @param filePath file path on server
      * @return file content in bytes
      */
@@ -138,7 +139,7 @@ public class Proxy {
         // Marshall and send the request.
         DatagramPacket req = new DatagramPacket(request.toBytes(), BUF_SIZE, address, port);
 
-        while (true){
+        while (true) {
             try {
                 socket.send(req);
                 socket.setSoTimeout(timeout);
@@ -151,8 +152,8 @@ public class Proxy {
                 return res;
 
             } catch (SocketTimeoutException e) {
-                if ( ++count == max_recv_attempts) {
-                    logger.warn(String.format("No response received after %d attempts.", max_recv_attempts));
+                if ( ++count == maxRecvAttempts) {
+                    logger.warn(String.format("No response received after %d attempts.", maxRecvAttempts));
                     throw e;
                 }
             }

@@ -4,7 +4,7 @@ import java.util.HashMap;
 
 public class Cache {
     private long freshnessInterval;
-    private HashMap<String, CacheEntry> cachedFiles = new HashMap<String, CacheEntry>();
+    private HashMap<String, CacheEntry> cachedFiles = new HashMap<>();
 
     public Cache(long freshnessInterval) {
         this.freshnessInterval = freshnessInterval;

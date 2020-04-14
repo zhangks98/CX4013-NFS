@@ -2,6 +2,7 @@
 package sg.edu.ntu.nfs.client;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Optional;
 import org.apache.logging.log4j.LogManager;
@@ -25,31 +26,22 @@ public class FileOperations {
     public Optional<byte[]> read(String filePath, int offset, int count) throws IOException {
 
         Optional<byte[]> optFile = cache_handler.getFile(filePath);
-        Optional<byte[]> optSlice = Optional.empty();
+        byte[] slice = null;
 
         if (optFile.isPresent()) {
             byte[] file = optFile.get();
-
-            if (file != null) {
-                if (offset >= file.length) {
-                    logger.warn("Offset out of range");
-
-                } else if (file.length - offset < count) {
-                    byte[] slice = Arrays.copyOfRange(file, offset, file.length);
-                    logger.warn("Count out of range, returning available bytes:\n" + slice.toString());
-                    optSlice = Optional.of(slice);
-
-                } else {
-                    byte[] slice = Arrays.copyOfRange(file, offset, offset + count);
-                    logger.info(slice.toString());
-                    optSlice = Optional.of(slice);
-                }
-
+            if (offset >= file.length) {
+                logger.warn("Offset out of range");
+            } else if (file.length - offset < count) {
+                slice = Arrays.copyOfRange(file, offset, file.length);
+                logger.warn("Count out of range, return remaining bytes starting from offset:\n");
+                System.out.println(new String(slice, StandardCharsets.UTF_8));
             } else {
-                logger.error(filePath + " is not found on server");
+                slice = Arrays.copyOfRange(file, offset, offset + count);
+                System.out.println("Content retrieved: " + new String(slice, StandardCharsets.UTF_8));
             }
         }
-        return optSlice;
+        return Optional.ofNullable(slice);
     }
 
 }
