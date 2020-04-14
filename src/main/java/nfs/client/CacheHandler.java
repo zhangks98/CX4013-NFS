@@ -7,10 +7,12 @@ public class CacheHandler {
 
     static Cache cache; // only one instance
     private final Proxy stub;
+    private final long freshInterval;
 
     public CacheHandler(Proxy stub, long freshInterval) {
         this.stub = stub;
-        cache = new Cache(freshInterval);
+        this.freshInterval = freshInterval;
+        cache = new Cache();
     }
 
     /**
@@ -38,7 +40,7 @@ public class CacheHandler {
             CacheEntry entry = cache.getFile(filePath);
             System.out.println((entry != null));
             // check freshness upon access
-            if (System.currentTimeMillis() - entry.getTc() >= cache.getFreshnessInterval()) {
+            if (System.currentTimeMillis() - entry.getTc() >= freshInterval) {
                 Optional<long[]> optAttr = stub.getAttr((filePath));
 
                 if (optAttr.isPresent()) {
