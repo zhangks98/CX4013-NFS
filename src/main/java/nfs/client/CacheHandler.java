@@ -1,10 +1,13 @@
 package nfs.client;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import java.io.IOException;
 import java.util.Optional;
 
 public class CacheHandler {
-
+    private static final Logger logger = LogManager.getLogger();
     static Cache cache; // only one instance
     private final Proxy stub;
     private final long freshInterval;
@@ -31,6 +34,7 @@ public class CacheHandler {
             optContent = stub.requestFile(filePath);
             // file found on server
             if (optContent.isPresent()) {
+                logger.info(filePath + " is not cached. File retrieved from server.");
                 byte[] fileContent = optContent.get();
                 long tMclient = System.currentTimeMillis();
                 long tC = System.currentTimeMillis();
@@ -38,7 +42,7 @@ public class CacheHandler {
             }
         } else {
             CacheEntry entry = cache.getFile(filePath);
-            System.out.println((entry != null));
+            logger.info(filePath + " retrieved from cache");
             // check freshness upon access
             if (System.currentTimeMillis() - entry.getTc() >= freshInterval) {
                 Optional<long[]> optAttr = stub.getAttr((filePath));
@@ -84,6 +88,30 @@ public class CacheHandler {
         } else {
             cache.addFile(filePath, newContent, now, now);
         }
+    }
+
+    /**
+     * Send a write request to the server
+     * Remove the file from cache (if cached) to maintain cache consistency
+     *
+     * @param filePath file path on the server
+     * @param offset   offset in bytes
+     * @param data     data in bytes
+     * @throws IOException
+     */
+    public void writeFile(String filePath, int offset, byte[] data) throws IOException {
+        stub.write(filePath, offset, data);
+        removeFromCache(filePath);
+    }
+
+    /**
+     * Remove a cached file
+     *
+     * @param filePath file path on the server
+     */
+    public void removeFromCache(String filePath) {
+        if (cache.exists(filePath))
+            cache.removeFile(filePath);
     }
 
     public Cache getCache() {

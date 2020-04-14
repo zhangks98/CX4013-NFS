@@ -13,6 +13,7 @@ import java.io.IOException;
 import java.net.*;
 import java.util.List;
 import java.util.Optional;
+import java.util.Random;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
@@ -26,15 +27,17 @@ public class Proxy {
     private final BlockingQueue<Response> queue;
     private final int timeout = 1000; // in milliseconds
     private final int maxRecvAttempts = 5;
+    private final double lossProb;
 
     public Proxy(InetAddress address, int port, DatagramSocket callbackSocket,
-                 BlockingQueue<Response> queue) throws SocketException {
+                 BlockingQueue<Response> queue, double lossProb) throws SocketException {
         this.address = address;
         this.port = port;
         this.callbackSocket = callbackSocket;
         this.queue = queue;
         this.socket = new DatagramSocket();
         this.socket.setSoTimeout(timeout);
+        this.lossProb = lossProb;
     }
 
     /**
@@ -138,6 +141,17 @@ public class Proxy {
     }
 
     /**
+     * Determine if a request loss will be simulated
+     *
+     * @return boolean indicating if a request is lost
+     */
+    private boolean requestLost() {
+        Random rand = new Random();
+        double randNum = rand.nextDouble();
+        return randNum < lossProb;
+    }
+
+    /**
      * Invoke a remote procedure on the server and get response
      * If timeout, retry within maximum possible attempts
      *
@@ -152,7 +166,10 @@ public class Proxy {
 
         while (true) {
             try {
-                socket.send(req);
+                if (!requestLost())
+                    socket.send(req);
+                else
+                    logger.warn("The request is lost");
 
                 // Receive and unmarshal the response.
                 byte[] buffer = new byte[Serializer.BUF_SIZE];

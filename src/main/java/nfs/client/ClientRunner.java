@@ -100,7 +100,7 @@ public class ClientRunner implements Callable<Integer> {
                     break;
                 case "write":
                     if (validateLength(command, 4) && containsNum(command[2]))
-                        stub.write(command[1], Integer.parseInt(command[2]), command[3].getBytes());
+                        fileOp.write(command[1], Integer.parseInt(command[2]), command[3].getBytes());
                     break;
                 case "touch":
                     if (validateLength(command, 2))
@@ -138,7 +138,7 @@ public class ClientRunner implements Callable<Integer> {
         // Socket for handling callbacks.
         DatagramSocket callbackSocket = new DatagramSocket();
 
-        stub = new Proxy(address, port, callbackSocket, queue);
+        stub = new Proxy(address, port, callbackSocket, queue, lossProb);
         CacheHandler cacheHandler = new CacheHandler(stub, freshInterval);
         CallbackHandler callbackHandler = new CallbackHandler(cacheHandler, callbackSocket, queue);
         Thread callbackThread = new Thread(callbackHandler);
@@ -158,8 +158,8 @@ public class ClientRunner implements Callable<Integer> {
                 callbackThread.interrupt();
                 break;
             }
-            String[] split_input = userInput.trim().split(" ");
-            processCommand(split_input);
+            String[] splitInput = userInput.trim().split(" ");
+            processCommand(splitInput);
             System.out.println();
         }
 
