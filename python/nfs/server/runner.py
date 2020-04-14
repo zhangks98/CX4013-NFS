@@ -62,9 +62,9 @@ def main():
 
             try:
                 req = Request.from_bytes(data)
-            except (ValueError, NotImplementedError) as exp:
+            except (ValueError, NotImplementedError) as e:
                 logger.exception("Unable to parse request")
-                res = Response(req.get_id(), ResponseStatus.BAD_REQUEST)
+                res = Response(req.get_id(), ResponseStatus.BAD_REQUEST, [Str(str(e))])
                 sock.sendto(res.to_bytes(), addr)
                 continue
 
