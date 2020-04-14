@@ -32,8 +32,8 @@ class TestALOServier:
         val = self.servicer.handle(req, addr)
         mtime = val[0].get_val()
         atime = val[1].get_val()
-        assert mtime == int(fs.stat('test.txt').st_mtime)
-        assert atime == int(fs.stat('test.txt').st_atime)
+        assert mtime == int(fs.stat('test.txt').st_mtime * 1000)
+        assert atime == int(fs.stat('test.txt').st_atime * 1000)
 
     def test_handle_touch(self, fs: FakeFilesystem):
         req = TouchRequest(0)
