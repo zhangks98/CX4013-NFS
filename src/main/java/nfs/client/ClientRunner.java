@@ -158,8 +158,8 @@ public class ClientRunner implements Callable<Integer> {
                 callbackThread.interrupt();
                 break;
             }
-            String[] split_input = userInput.trim().split(" ");
-            processCommand(split_input);
+            String[] splitInput = userInput.trim().split(" ");
+            processCommand(splitInput);
             System.out.println();
         }
 
