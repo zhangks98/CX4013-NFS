@@ -16,9 +16,9 @@ public class Proxy {
     private static final Logger logger = LogManager.getLogger();
     private final InetAddress address;
     private final int port;
-    private DatagramSocket socket;
-    private int timeout = 1000; // in milliseconds
-    private int max_recv_attempts = 5;
+    private final DatagramSocket socket;
+    private final int timeout = 500; // in milliseconds
+    private final int maxRecvAttempts = 5;
 
     public Proxy(InetAddress address, int port) throws SocketException {
         this.address = address;
@@ -28,31 +28,32 @@ public class Proxy {
 
     /**
      * Send a read request to the server
-     * @param file_path file path on server
+     *
+     * @param filePath file path on server
      * @return file content in bytes
      */
-    public Optional<byte[]> requestFile(String file_path) throws IOException {
-        Response res = invoke(new ReadRequest(file_path));
-        Optional<byte[]> opt_content = Optional.empty();
+    public Optional<byte[]> requestFile(String filePath) throws IOException {
+        Response res = invoke(new ReadRequest(filePath));
+        Optional<byte[]> optContent = Optional.empty();
 
         if (res.getStatus() == ResponseStatus.OK) {
             byte[] content = (byte[]) res.getValues().get(0).getVal();
-            opt_content = Optional.of(content);
+            optContent = Optional.of(content);
         } else {
             logger.warn("Error read: response status " + res.getStatus().toString());
         }
-        return opt_content;
+        return optContent;
     }
 
     /**
      * Send a write request to the server
      * print the number of bytes written
-     * @param file_path file path on server
+     * @param filePath file path on server
      * @param offset offset of content insertion, measured in number of bytes
      * @param data bytes to write
      */
-    public void write(String file_path, int offset, byte[] data) throws IOException {
-        Response res = invoke(new WriteRequest(file_path, offset, data));
+    public void write(String filePath, int offset, byte[] data) throws IOException {
+        Response res = invoke(new WriteRequest(filePath, offset, data));
         if (res.getStatus() == ResponseStatus.OK) {
             System.out.println("Success");
         } else {
@@ -64,13 +65,13 @@ public class Proxy {
      * Request to touch a file on the server
      * if file exists, last modified time of the file will be returned
      * otherwise, file will be created on the server
-     * @param file_path file path on server
+     * @param filePath file path on server
      */
-    public void touch(String file_path) throws IOException {
-        Response res = invoke(new TouchRequest(file_path));
+    public void touch(String filePath) throws IOException {
+        Response res = invoke(new TouchRequest(filePath));
         if (res.getStatus() == ResponseStatus.OK) {
-            long atime = (long) res.getValues().get(0).getVal();
-            System.out.println(file_path + "   Last accessed at: " + atime);
+            long aTime = (long) res.getValues().get(0).getVal();
+            System.out.println(filePath + "   Last accessed at: " + aTime);
         } else {
             logger.warn("Error touch: response status " + res.getStatus().toString());
         }
@@ -94,11 +95,11 @@ public class Proxy {
 
     /**
      * Send a request to register for updates of a file on server
-     * @param file_path file path on server
+     * @param filePath file path on server
      * @param monitor_interval duration for monitor file updates
      */
-    public void register(String file_path, int monitor_interval) throws IOException {
-        Response res = invoke(new RegisterRequest(file_path, monitor_interval));
+    public void register(String filePath, int monitor_interval) throws IOException {
+        Response res = invoke(new RegisterRequest(filePath, monitor_interval));
         if (res.getStatus() == ResponseStatus.OK) {
             logger.info("Successfully registered");
         } else {
@@ -108,22 +109,22 @@ public class Proxy {
 
     /**
      * Request the last access time and last modified time of a file on the server
-     * @param file_path file path on server
+     * @param filePath file path on server
      * @return last modified time and last access time of the file
      */
-    public Optional<long[]> getAttr(String file_path) throws IOException {
-        Response res = invoke(new GetAttrRequest(file_path));
-        Optional<long[]> opt_times = Optional.empty();
+    public Optional<long[]> getAttr(String filePath) throws IOException {
+        Response res = invoke(new GetAttrRequest(filePath));
+        Optional<long[]> optTimes = Optional.empty();
 
         if (res.getStatus() == ResponseStatus.OK){
-            long mtime = (long) res.getValues().get(0).getVal();
-            long atime = (long) res.getValues().get(1).getVal();
-            long[] times = {mtime, atime};
-            opt_times = Optional.of(times);
+            long mTime = (long) res.getValues().get(0).getVal();
+            long aTime = (long) res.getValues().get(1).getVal();
+            long[] times = {mTime, aTime};
+            optTimes = Optional.of(times);
         } else {
             logger.warn("Error get attributes: response status " + res.getStatus().toString());
         }
-        return opt_times;
+        return optTimes;
     }
 
     /**
@@ -138,7 +139,7 @@ public class Proxy {
         // Marshall and send the request.
         DatagramPacket req = new DatagramPacket(request.toBytes(), BUF_SIZE, address, port);
 
-        while (true){
+        while (true) {
             try {
                 socket.send(req);
                 socket.setSoTimeout(timeout);
@@ -151,8 +152,8 @@ public class Proxy {
                 return res;
 
             } catch (SocketTimeoutException e) {
-                if ( ++count == max_recv_attempts) {
-                    logger.warn(String.format("No response received after %d attempts.", max_recv_attempts));
+                if ( ++count == maxRecvAttempts) {
+                    logger.warn(String.format("No response received after %d attempts.", maxRecvAttempts));
                     throw e;
                 }
             }
