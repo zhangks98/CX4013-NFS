@@ -3,7 +3,9 @@ package sg.edu.ntu.nfs.client;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import sg.edu.ntu.nfs.common.requests.*;
-import sg.edu.ntu.nfs.common.responses.*;
+import sg.edu.ntu.nfs.common.responses.Response;
+import sg.edu.ntu.nfs.common.responses.ResponseBuilder;
+import sg.edu.ntu.nfs.common.responses.ResponseStatus;
 import sg.edu.ntu.nfs.common.values.Value;
 
 import java.io.IOException;
@@ -19,8 +21,8 @@ public class Proxy {
     private final InetAddress address;
     private final int port;
     private final DatagramSocket socket;
-    private final int timeout = 1000; // in milliseconds
-    private final int max_recv_attempts = 5;
+    private final int timeout = 500; // in milliseconds
+    private final int maxRecvAttempts = 5;
 
     public Proxy(InetAddress address, int port) throws SocketException {
         this.address = address;
@@ -30,24 +32,26 @@ public class Proxy {
 
     /**
      * Send a read request to the server
+     * <p>
+     * <<<<<<< HEAD
      *
-     * @param file_path file path on server
+     * @param filePath file path on server
      * @return file content in bytes
      */
-    public Optional<byte[]> requestFile(String file_path) throws IOException {
-        return invoke(new ReadRequest(file_path)).map(res -> (byte[]) res.get(0));
+    public Optional<byte[]> requestFile(String filePath) throws IOException {
+        return invoke(new ReadRequest(filePath)).map(res -> (byte[]) res.get(0));
     }
 
     /**
      * Send a write request to the server
      * print the number of bytes written
      *
-     * @param file_path file path on server
-     * @param offset    offset of content insertion, measured in number of bytes
-     * @param data      bytes to write
+     * @param filePath file path on server
+     * @param offset   offset of content insertion, measured in number of bytes
+     * @param data     bytes to write
      */
-    public void write(String file_path, int offset, byte[] data) throws IOException {
-        invoke(new WriteRequest(file_path, offset, data))
+    public void write(String filePath, int offset, byte[] data) throws IOException {
+        invoke(new WriteRequest(filePath, offset, data))
                 .ifPresent(res -> System.out.println("Success"));
     }
 
@@ -56,12 +60,12 @@ public class Proxy {
      * if file exists, last modified time of the file will be returned
      * otherwise, file will be created on the server
      *
-     * @param file_path file path on server
+     * @param filePath file path on server
      */
-    public void touch(String file_path) throws IOException {
-        invoke(new TouchRequest(file_path)).ifPresent(res -> {
+    public void touch(String filePath) throws IOException {
+        invoke(new TouchRequest(filePath)).ifPresent(res -> {
             long atime = (long) res.get(0);
-            System.out.println(file_path + "   Last accessed at: " + atime);
+            System.out.println(filePath + " Last accessed at: " + atime);
         });
     }
 
@@ -81,22 +85,22 @@ public class Proxy {
     /**
      * Send a request to register for updates of a file on server
      *
-     * @param file_path        file path on server
+     * @param filePath         file path on server
      * @param monitor_interval duration for monitor file updates
      */
-    public void register(String file_path, int monitor_interval) throws IOException {
-        invoke(new RegisterRequest(file_path, monitor_interval))
+    public void register(String filePath, int monitor_interval) throws IOException {
+        invoke(new RegisterRequest(filePath, monitor_interval))
                 .ifPresent(res -> logger.info("Successfully registered"));
     }
 
     /**
      * Request the last access time and last modified time of a file on the server
      *
-     * @param file_path file path on server
+     * @param filePath file path on server
      * @return last modified time and last access time of the file
      */
-    public Optional<long[]> getAttr(String file_path) throws IOException {
-        return invoke(new GetAttrRequest(file_path)).map(res -> {
+    public Optional<long[]> getAttr(String filePath) throws IOException {
+        return invoke(new GetAttrRequest(filePath)).map(res -> {
             long mtime = (long) res.get(0);
             long atime = (long) res.get(1);
             return new long[]{mtime, atime};
@@ -145,8 +149,8 @@ public class Proxy {
                     return Optional.empty();
                 }
             } catch (SocketTimeoutException e) {
-                if (++count == max_recv_attempts) {
-                    logger.warn(String.format("No response received after %d attempts.", max_recv_attempts));
+                if (++count == maxRecvAttempts) {
+                    logger.warn(String.format("No response received after %d attempts.", maxRecvAttempts));
                     throw e;
                 }
             }

@@ -8,8 +8,7 @@ import picocli.CommandLine.Parameters;
 
 import java.io.IOException;
 import java.net.InetAddress;
-import java.net.SocketException;
-import java.net.SocketTimeoutException;
+import java.net.UnknownHostException;
 import java.util.Scanner;
 import java.util.concurrent.Callable;
 
@@ -17,26 +16,29 @@ import java.util.concurrent.Callable;
 public class ClientRunner implements Callable<Integer> {
     private static final Logger logger = LogManager.getLogger();
     Scanner sc = new Scanner(System.in);
-    FileOperations file_op;
+    FileOperations fileOp;
     Proxy stub;
-    CacheHandler cache_handler;
+    CacheHandler cacheHandler;
+    CallbackReceiver callbackReceiver;
+
     @Parameters(index = "0", description = "The address of the file server.")
     private InetAddress address;
     @Parameters(index = "1", description = "The port of the file server.")
     private int port;
+    @Parameters(index = "2", description = "Freshness interval of the client cache")
+    private long freshness_interval;
 
-    String interface_msg = "\n============= Client User Interface ============\n"
+    String interfaceMsg = "\n================== Client User Interface =================\n"
             + "The following commands are available:     \n"
             + "<> - required arguments\n"
             + "[] - optional arguments\n\n"
-            + "| read <file_path> <offset> <count>       |\n"
-            + "| write <file_path> <offset> <data>       |\n"
-            + "| register <file_path> <monitor_interval> |\n"
-            + "| touch <new_file_path>                   |\n"
-            + "| ls [dir]                                |\n"
-            + "| help                                    |\n"
-            + "| exit                                    |";
-
+            + "| read <file path> <offset> <count>                  |\n"
+            + "| write <file path> <offset> <data>                  |\n"
+            + "| register <file path> <monitor interval (ms)>       |\n"
+            + "| touch <new file path>                              |\n"
+            + "| ls [dir]                                           |\n"
+            + "| help                                               |\n"
+            + "| exit                                               |";
 
     public static void main(String... args) {
         int exitCode = new CommandLine(new ClientRunner()).execute(args);
@@ -45,14 +47,14 @@ public class ClientRunner implements Callable<Integer> {
 
     /**
      * Check if an input string is a string of integer
-     * @param str_input input string
+     * @param strInput input string
      * @return true if a number can be parsed from the string
      */
-    public boolean containsNum(String str_input) {
+    public boolean containsNum(String strInput) {
         try {
-            Integer.parseInt(str_input);
+            Integer.parseInt(strInput);
         } catch (NumberFormatException e) {
-            logger.warn(str_input + " is not a numerical value");
+            logger.warn(strInput + " is not a numerical value");
             return false;
         } catch (Exception e) {
             logger.warn("Exception: " + e);
@@ -86,7 +88,7 @@ public class ClientRunner implements Callable<Integer> {
         try{
             if (command[0].equals("read")) {
                 if(validateLength(command, 4) && containsNum(command[2]) && containsNum(command[3]))
-                    file_op.read(command[1], Integer.parseInt(command[2]), Integer.parseInt(command[3]));
+                    fileOp.read(command[1], Integer.parseInt(command[2]), Integer.parseInt(command[3]));
 
             } else if (command[0].equals("write")) {
                 if (validateLength(command, 4) && containsNum(command[2]))
@@ -103,12 +105,16 @@ public class ClientRunner implements Callable<Integer> {
                     stub.listDir(command[1]);
 
             } else if (command[0].equals("register")) {
-                if (validateLength(command, 3) && containsNum(command[2]))
-                    stub.register(command[1], Integer.parseInt(command[2]));
+                if (validateLength(command, 3) && containsNum(command[2])) {
+                    int monitorInterval = Integer.parseInt(command[2]);
+                    stub.register(command[1], monitorInterval);
+                    callbackReceiver.run(monitorInterval);
+                }
 
             } else if (command[0].equals("help")) {
-                System.out.println(interface_msg);
+                System.out.println(interfaceMsg);
                 System.out.println();
+
             } else {
                 logger.warn("Invalid commands, please try again");
             }
@@ -121,21 +127,21 @@ public class ClientRunner implements Callable<Integer> {
     @Override
     public Integer call() throws Exception {
         stub = new Proxy(address, port);
-        // init cache with freshness interval.
-        cache_handler = new CacheHandler(stub, 1000);
-        file_op = new FileOperations(cache_handler);
+        cacheHandler = new CacheHandler(stub, 1000);
+        fileOp = new FileOperations(cacheHandler);
+        callbackReceiver = new CallbackReceiver(cacheHandler);
 
-        System.out.println(interface_msg);
+        System.out.println(interfaceMsg);
         System.out.println();
 
         while (true) {
-            System.out.print("$ ");
-            String user_input = sc.nextLine();
-            if (user_input.trim().equals("exit"))
+            String userInput = sc.nextLine();
+            if (userInput.trim().equals("exit"))
                 break;
-            String[] split_input = user_input.trim().split(" ");
+            String[] split_input = userInput.trim().split(" ");
             processCommand(split_input);
         }
+
         return 0;
     }
 }
