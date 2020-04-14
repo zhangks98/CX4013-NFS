@@ -1,10 +1,11 @@
 package nfs.client;
 
-import java.util.HashMap;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class Cache {
+    private final Map<String, CacheEntry> cachedFiles = new ConcurrentHashMap<>();
     private long freshnessInterval;
-    private final HashMap<String, CacheEntry> cachedFiles = new HashMap<>();
 
     public Cache(long freshnessInterval) {
         this.freshnessInterval = freshnessInterval;
@@ -54,11 +55,8 @@ public class Cache {
      * @param tC         last validation time on client - given by cache handler
      */
     public void replaceFile(String filePath, byte[] newContent, long tMclient, long tC) {
-        CacheEntry entry = cachedFiles.get(filePath);
-        entry.setFileContent(newContent);
-        entry.setTmclient(tMclient);
-        entry.setTc(tC);
-        cachedFiles.replace(filePath, entry);
+        CacheEntry newEntry = new CacheEntry(newContent, tC, tMclient);
+        cachedFiles.replace(filePath, newEntry);
     }
 
     /**

@@ -13,6 +13,8 @@ import java.io.IOException;
 import java.net.*;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 public class Proxy {
@@ -20,19 +22,23 @@ public class Proxy {
     private final InetAddress address;
     private final int port;
     private final DatagramSocket socket;
-    private final int timeout = 500; // in milliseconds
+    private final DatagramSocket callbackSocket;
+    private final BlockingQueue<Response> queue;
+    private final int timeout = 1000; // in milliseconds
     private final int maxRecvAttempts = 5;
 
-    public Proxy(InetAddress address, int port) throws SocketException {
+    public Proxy(InetAddress address, int port, DatagramSocket callbackSocket,
+                 BlockingQueue<Response> queue) throws SocketException {
         this.address = address;
         this.port = port;
+        this.callbackSocket = callbackSocket;
+        this.queue = queue;
         this.socket = new DatagramSocket();
+        this.socket.setSoTimeout(timeout);
     }
 
     /**
      * Send a read request to the server
-     * <p>
-     * <<<<<<< HEAD
      *
      * @param filePath file path on server
      * @return file content in bytes
@@ -82,17 +88,6 @@ public class Proxy {
     }
 
     /**
-     * Send a request to register for updates of a file on server
-     *
-     * @param filePath         file path on server
-     * @param monitor_interval duration for monitor file updates
-     */
-    public void register(String filePath, int monitor_interval) throws IOException {
-        invoke(new RegisterRequest(filePath, monitor_interval))
-                .ifPresent(res -> logger.info("Successfully registered"));
-    }
-
-    /**
      * Request the last access time and last modified time of a file on the server
      *
      * @param filePath file path on server
@@ -104,6 +99,42 @@ public class Proxy {
             long atime = (long) res.get(1);
             return new long[]{mtime, atime};
         });
+    }
+
+    /**
+     * Send a request to register for updates of a file on server
+     *
+     * @param filePath        file path on server
+     * @param monitorInterval duration for monitor file updates
+     */
+    public void register(String filePath, int monitorInterval) throws IOException {
+        Request request = new RegisterRequest(filePath, monitorInterval);
+        DatagramPacket req = new DatagramPacket(request.toBytes(), Serializer.BUF_SIZE, address, port);
+        callbackSocket.send(req);
+        try {
+            Response res = queue.poll(timeout, TimeUnit.MILLISECONDS);
+            if (res == null) {
+                logger.warn(String.format(
+                        "Callback register error: No response received after %d ms.", timeout));
+            } else if (res.getStatus() == ResponseStatus.OK) {
+                System.out.println("Success");
+            } else {
+                String errorMsg = res.getValues().size() > 0 ?
+                        (String) res.getValues().get(0).getVal() : "";
+                logger.warn(String.format("Callback register error: response status %s: %s",
+                        res.getStatus(), errorMsg));
+            }
+        } catch (InterruptedException e) {
+            logger.error(e);
+        }
+    }
+
+    /**
+     * Close all the sockets.
+     */
+    public void close() {
+        socket.close();
+        callbackSocket.close();
     }
 
     /**
@@ -122,7 +153,6 @@ public class Proxy {
         while (true) {
             try {
                 socket.send(req);
-                socket.setSoTimeout(timeout);
 
                 // Receive and unmarshal the response.
                 byte[] buffer = new byte[Serializer.BUF_SIZE];
@@ -135,16 +165,12 @@ public class Proxy {
                             .map(Value::getVal)
                             .collect(Collectors.toList()));
                 } else {
-                    if (response.getValues().size() > 0) {
-                        logger.warn(String.format("Error invoking %s: response status %s: %s",
-                                request.getName(),
-                                response.getStatus(),
-                                response.getValues().get(0).getVal()));
-                    } else {
-                        logger.warn(String.format("Error invoking %s: response status %s",
-                                request.getName(),
-                                response.getStatus()));
-                    }
+                    String errorMsg = response.getValues().size() > 0 ?
+                            (String) response.getValues().get(0).getVal() : "";
+                    logger.warn(String.format("Error invoking %s: response status %s: %s",
+                            request.getName(),
+                            response.getStatus(),
+                            errorMsg));
                     return Optional.empty();
                 }
             } catch (SocketTimeoutException e) {
