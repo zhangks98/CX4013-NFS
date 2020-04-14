@@ -10,10 +10,10 @@ import java.util.Optional;
 
 public class FileOperations {
     private static final Logger logger = LogManager.getLogger();
-    private final CacheHandler cache_handler;
+    private final CacheHandler cacheHandler;
 
     public FileOperations(CacheHandler cacheHandler) {
-        this.cache_handler = cacheHandler;
+        this.cacheHandler = cacheHandler;
     }
 
     /**
@@ -26,7 +26,7 @@ public class FileOperations {
      */
     public Optional<byte[]> read(String filePath, int offset, int count) throws IOException {
 
-        Optional<byte[]> optFile = cache_handler.getFile(filePath);
+        Optional<byte[]> optFile = cacheHandler.getFile(filePath);
         byte[] slice = null;
 
         if (optFile.isPresent()) {
@@ -43,6 +43,18 @@ public class FileOperations {
             }
         }
         return Optional.ofNullable(slice);
+    }
+
+    /**
+     * Write to a file by inserting data at the offset
+     *
+     * @param filePath file path on hte server
+     * @param offset   offset in bytes
+     * @param data     data in bytes
+     * @throws IOException
+     */
+    public void write(String filePath, int offset, byte[] data) throws IOException {
+        cacheHandler.writeFile(filePath, offset, data);
     }
 
 }
