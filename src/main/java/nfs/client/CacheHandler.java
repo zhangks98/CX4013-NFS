@@ -57,6 +57,9 @@ public class CacheHandler {
                             long tMclient = System.currentTimeMillis();
                             long tC = System.currentTimeMillis();
                             cache.replaceFile(filePath, fileContent, tMclient, tC);
+                        } else {
+                            // file no longer available on server
+                            cache.removeFile(filePath);
                         }
                     }
                 }

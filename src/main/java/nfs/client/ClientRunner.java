@@ -134,7 +134,7 @@ public class ClientRunner implements Callable<Integer> {
     @Override
     public Integer call() throws Exception {
         // Queue for synchronizing register request.
-        SynchronousQueue<Response> queue = new SynchronousQueue<>(true);
+        SynchronousQueue<Response> queue = new SynchronousQueue<>(/*fair=*/true);
         // Socket for handling callbacks.
         DatagramSocket callbackSocket = new DatagramSocket();
 
