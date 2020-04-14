@@ -5,11 +5,6 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public class Cache {
     private final Map<String, CacheEntry> cachedFiles = new ConcurrentHashMap<>();
-    private long freshnessInterval;
-
-    public Cache(long freshnessInterval) {
-        this.freshnessInterval = freshnessInterval;
-    }
 
     /**
      * Check if a file is available in cache
@@ -68,11 +63,4 @@ public class Cache {
         cachedFiles.remove(filePath);
     }
 
-    public long getFreshnessInterval() {
-        return this.freshnessInterval;
-    }
-
-    public void setFreshnessInterval(long val) {
-        this.freshnessInterval = val;
-    }
 }

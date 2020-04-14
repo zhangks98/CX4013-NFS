@@ -4,8 +4,7 @@ import org.junit.Test;
 import static org.junit.Assert.*;
 
 public class CacheTest {
-    long freshnessInterval = 10000;
-    Cache cache = new Cache(freshnessInterval);
+    Cache cache = new Cache();
 
     @Test
     public void addEntry(){
