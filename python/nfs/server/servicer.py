@@ -49,8 +49,8 @@ class ALOServicer:
         if not os.path.exists(combined_path):
             raise NotFoundError(
                 'File {} does not exist on the server'.format(path))
-        # TODO(ming): check whether file_path points to a file, not a directory;
-        #  what if there's a directory with the same name as the file?
+        if os.path.isdir(combined_path):
+            raise BadRequestError('{} is a directory'.format(path))
         with open(combined_path, 'rb') as f:
             content = f.read()
         return [Bytes(content)]
@@ -67,6 +67,8 @@ class ALOServicer:
         if not os.path.exists(combined_path):
             raise NotFoundError(
                 'File {} does not exist on the server'.format(path))
+        if os.path.isdir(combined_path):
+            raise BadRequestError('{} is a directory'.format(path))
         # If offset exceeds the file length, returns error
         file_size = os.path.getsize(combined_path)
         if offset > file_size:
@@ -90,8 +92,8 @@ class ALOServicer:
         if not os.path.exists(combined_path):
             raise NotFoundError(
                 'File {} does not exist on the server'.format(path))
-        atime = int(os.path.getatime(combined_path))
-        mtime = int(os.path.getmtime(combined_path))
+        atime = int(os.path.getatime(combined_path) * 1000)
+        mtime = int(os.path.getmtime(combined_path) * 1000)
         return [Int64(mtime), Int64(atime)]
 
     def handle_list_dir(self, req: ListDirRequest):
@@ -110,7 +112,7 @@ class ALOServicer:
         combined_path = os.path.join(self.root_dir, path)
         logger.debug("Combined path: {}".format(combined_path))
         Path(path).touch()
-        atime = int(os.path.getatime(combined_path))
+        atime = int(os.path.getatime(combined_path) * 1000)
         # Returns access time (timestamp) to the client upon successful touch
         return [Int64(atime)]
 
