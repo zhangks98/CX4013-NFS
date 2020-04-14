@@ -1,12 +1,13 @@
 import argparse
 import logging
 import socket
-from os.path import isdir
+from os.path import abspath, isdir
 
 from nfs.common.exceptions import BadRequestError, NotFoundError
 from nfs.common.requests import Request
 from nfs.common.responses import Response, ResponseStatus
 from nfs.common.serialize import BUF_SIZE
+from nfs.common.values import Str
 from nfs.server.servicer import ALOServicer, AMOServicer
 
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
@@ -32,7 +33,7 @@ def main():
         '-m', '--mode', choices=['ALO', 'AMO'], required=True, help='Invocation semantic.')
     args = parser.parse_args()
 
-    UDP_IP = 'localhost'
+    UDP_IP = '0.0.0.0'
     UDP_PORT = args.port
     ROOT_DIR = args.path
     MODE = args.mode
@@ -53,7 +54,7 @@ def main():
         raise RuntimeError('Invalid invocation semantic.')
 
     logger.info('Server running in %s mode', MODE)
-    logger.info('Root directory: %s', ROOT_DIR)
+    logger.info('Root directory: %s', abspath(ROOT_DIR))
 
     try:
         while True:
@@ -61,9 +62,9 @@ def main():
 
             try:
                 req = Request.from_bytes(data)
-            except (ValueError, NotImplementedError) as exp:
+            except (ValueError, NotImplementedError) as e:
                 logger.exception("Unable to parse request")
-                res = Response(req.get_id(), ResponseStatus.BAD_REQUEST)
+                res = Response(req.get_id(), ResponseStatus.BAD_REQUEST, [Str(str(e))])
                 sock.sendto(res.to_bytes(), addr)
                 continue
 
@@ -76,16 +77,19 @@ def main():
             except BadRequestError as e:
                 logger.warning('Bad request for %s: %s',
                                req.get_name().name, e)
-                res = Response(req.get_id(), ResponseStatus.BAD_REQUEST)
+                res = Response(
+                    req.get_id(), ResponseStatus.BAD_REQUEST, [Str(str(e))])
                 sock.sendto(res.to_bytes(), addr)
             except NotFoundError as e:
                 logger.warning('Resources not found for %s: %s',
                                req.get_name().name, e)
-                res = Response(req.get_id(), ResponseStatus.NOT_FOUND)
+                res = Response(
+                    req.get_id(), ResponseStatus.NOT_FOUND, [Str(str(e))])
                 sock.sendto(res.to_bytes(), addr)
             except Exception as e:
                 logger.exception('Error handling %s', req.get_name().name)
-                res = Response(req.get_id(), ResponseStatus.INTERNAL_ERROR)
+                res = Response(
+                    req.get_id(), ResponseStatus.INTERNAL_ERROR, [Str(str(e))])
                 sock.sendto(res.to_bytes(), addr)
 
     except KeyboardInterrupt:

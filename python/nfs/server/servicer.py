@@ -47,7 +47,8 @@ class ALOServicer:
         logger.debug("Combined path: {}".format(combined_path))
         # Check whether file_path exists
         if not os.path.exists(combined_path):
-            raise NotFoundError('File {} does not exist on the server'.format(path))
+            raise NotFoundError(
+                'File {} does not exist on the server'.format(path))
         # TODO(ming): check whether file_path points to a file, not a directory;
         #  what if there's a directory with the same name as the file?
         with open(combined_path, 'rb') as f:
@@ -58,16 +59,19 @@ class ALOServicer:
         path = req.get_path()
         offset = req.get_offset()
         data = req.get_data()
-        logger.debug("Arguments - path: {}, offset: {}, data: {}".format(path, offset, data))
+        logger.debug(
+            "Arguments - path: {}, offset: {}, data: {}".format(path, offset, data))
         combined_path = os.path.join(self.root_dir, path)
         logger.debug("Combined path: {}".format(combined_path))
         # If file does not exist on the server, returns error
         if not os.path.exists(combined_path):
-            raise NotFoundError('File {} does not exist on the server'.format(path))
+            raise NotFoundError(
+                'File {} does not exist on the server'.format(path))
         # If offset exceeds the file length, returns error
         file_size = os.path.getsize(combined_path)
         if offset > file_size:
-            raise BadRequestError("Offset {} exceeds the file length {}".format(offset, file_size))
+            raise BadRequestError(
+                "Offset {} exceeds the file length {}".format(offset, file_size))
         with open(combined_path, "ab+") as f:
             f.seek(offset)
             remaining_content = f.read()  # Save the content after offset
@@ -84,7 +88,8 @@ class ALOServicer:
         combined_path = os.path.join(self.root_dir, path)
         logger.debug("Combined path: {}".format(combined_path))
         if not os.path.exists(combined_path):
-            raise NotFoundError('File {} does not exist on the server'.format(path))
+            raise NotFoundError(
+                'File {} does not exist on the server'.format(path))
         atime = int(os.path.getatime(combined_path))
         mtime = int(os.path.getmtime(combined_path))
         return [Int64(mtime), Int64(atime)]
