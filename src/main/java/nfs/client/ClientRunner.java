@@ -3,8 +3,7 @@ package nfs.client;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import picocli.CommandLine;
-import picocli.CommandLine.Command;
-import picocli.CommandLine.Parameters;
+import picocli.CommandLine.*;
 
 import java.io.IOException;
 import java.net.InetAddress;
@@ -34,8 +33,13 @@ public class ClientRunner implements Callable<Integer> {
     private InetAddress address;
     @Parameters(index = "1", description = "The port of the file server.")
     private int port;
-    @Parameters(index = "2", description = "Freshness interval of the client cache")
-    private long freshness_interval;
+    @Option(names = {"-f", "--fresh-interval"}, defaultValue = "10000",
+            description = "Freshness interval (in ms) of the client cache. Default value: ${DEFAULT-VALUE}")
+    private long freshInterval;
+    @Option(names = {"-l", "--loss-prob"}, defaultValue = "0",
+            description = "Probability of a request loss. Default value: ${DEFAULT-VALUE}")
+    private double lossProb;
+
 
     public static void main(String... args) {
         int exitCode = new CommandLine(new ClientRunner()).execute(args);
@@ -86,37 +90,38 @@ public class ClientRunner implements Callable<Integer> {
             return;
 
         try {
-            if (command[0].equals("read")) {
-                if (validateLength(command, 4) && containsNum(command[2]) && containsNum(command[3]))
-                    fileOp.read(command[1], Integer.parseInt(command[2]), Integer.parseInt(command[3]));
-
-            } else if (command[0].equals("write")) {
-                if (validateLength(command, 4) && containsNum(command[2]))
-                    stub.write(command[1], Integer.parseInt(command[2]), command[3].getBytes());
-
-            } else if (command[0].equals("touch")) {
-                if (validateLength(command, 2))
-                    stub.touch(command[1]);
-
-            } else if (command[0].equals("ls")) {
-                if (command.length == 1)
-                    stub.listDir(".");
-                else if (validateLength(command, 2))
-                    stub.listDir(command[1]);
-
-            } else if (command[0].equals("register")) {
-                if (validateLength(command, 3) && containsNum(command[2])) {
-                    int monitorInterval = Integer.parseInt(command[2]);
-                    stub.register(command[1], monitorInterval);
-                    callbackReceiver.run(monitorInterval);
-                }
-
-            } else if (command[0].equals("help")) {
-                System.out.println(interfaceMsg);
-                System.out.println();
-
-            } else {
-                logger.warn("Invalid commands, please try again");
+            switch (command[0]) {
+                case "read":
+                    if (validateLength(command, 4) && containsNum(command[2]) && containsNum(command[3]))
+                        fileOp.read(command[1], Integer.parseInt(command[2]), Integer.parseInt(command[3]));
+                    break;
+                case "write":
+                    if (validateLength(command, 4) && containsNum(command[2]))
+                        stub.write(command[1], Integer.parseInt(command[2]), command[3].getBytes());
+                    break;
+                case "touch":
+                    if (validateLength(command, 2))
+                        stub.touch(command[1]);
+                    break;
+                case "ls":
+                    if (command.length == 1)
+                        stub.listDir(".");
+                    else if (validateLength(command, 2))
+                        stub.listDir(command[1]);
+                    break;
+                case "register":
+                    if (validateLength(command, 3) && containsNum(command[2])) {
+                        int monitorInterval = Integer.parseInt(command[2]);
+                        stub.register(command[1], monitorInterval);
+                        callbackReceiver.run(monitorInterval);
+                    }
+                    break;
+                case "help":
+                    System.out.println(interfaceMsg);
+                    break;
+                default:
+                    logger.warn("Invalid commands, please try again");
+                    break;
             }
 
         } catch (IOException e) {
@@ -127,7 +132,7 @@ public class ClientRunner implements Callable<Integer> {
     @Override
     public Integer call() throws Exception {
         stub = new Proxy(address, port);
-        cacheHandler = new CacheHandler(stub, 1000);
+        cacheHandler = new CacheHandler(stub, freshInterval);
         fileOp = new FileOperations(cacheHandler);
         callbackReceiver = new CallbackReceiver(cacheHandler);
 
@@ -135,11 +140,13 @@ public class ClientRunner implements Callable<Integer> {
         System.out.println();
 
         while (true) {
+            System.out.print("nfs-client> ");
             String userInput = sc.nextLine();
             if (userInput.trim().equals("exit"))
                 break;
             String[] split_input = userInput.trim().split(" ");
             processCommand(split_input);
+            System.out.println();
         }
 
         return 0;
