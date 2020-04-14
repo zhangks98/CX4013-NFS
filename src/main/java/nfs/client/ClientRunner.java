@@ -1,23 +1,23 @@
 package nfs.client;
 
+import nfs.common.responses.Response;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import picocli.CommandLine;
-import picocli.CommandLine.*;
+import picocli.CommandLine.Command;
+import picocli.CommandLine.Option;
+import picocli.CommandLine.Parameters;
 
 import java.io.IOException;
+import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.util.Scanner;
 import java.util.concurrent.Callable;
+import java.util.concurrent.SynchronousQueue;
 
 @Command(description = "The client for remote file access.", name = "nfs-client", mixinStandardHelpOptions = true)
 public class ClientRunner implements Callable<Integer> {
     private static final Logger logger = LogManager.getLogger();
-    Scanner sc = new Scanner(System.in);
-    FileOperations fileOp;
-    Proxy stub;
-    CacheHandler cacheHandler;
-    CallbackReceiver callbackReceiver;
     String interfaceMsg = "\n================== Client User Interface =================\n"
             + "The following commands are available:     \n"
             + "<> - required arguments\n"
@@ -29,6 +29,9 @@ public class ClientRunner implements Callable<Integer> {
             + "| ls [dir]                                           |\n"
             + "| help                                               |\n"
             + "| exit                                               |";
+    private final Scanner sc = new Scanner(System.in);
+    private FileOperations fileOp;
+    private Proxy stub;
     @Parameters(index = "0", description = "The address of the file server.")
     private InetAddress address;
     @Parameters(index = "1", description = "The port of the file server.")
@@ -113,7 +116,6 @@ public class ClientRunner implements Callable<Integer> {
                     if (validateLength(command, 3) && containsNum(command[2])) {
                         int monitorInterval = Integer.parseInt(command[2]);
                         stub.register(command[1], monitorInterval);
-                        callbackReceiver.run(monitorInterval);
                     }
                     break;
                 case "help":
@@ -131,10 +133,19 @@ public class ClientRunner implements Callable<Integer> {
 
     @Override
     public Integer call() throws Exception {
-        stub = new Proxy(address, port);
-        cacheHandler = new CacheHandler(stub, freshInterval);
+        // Queue for synchronizing register request.
+        SynchronousQueue<Response> queue = new SynchronousQueue<>(true);
+        // Socket for handling callbacks.
+        DatagramSocket callbackSocket = new DatagramSocket();
+
+        stub = new Proxy(address, port, callbackSocket, queue);
+        CacheHandler cacheHandler = new CacheHandler(stub, freshInterval);
+        CallbackHandler callbackHandler = new CallbackHandler(cacheHandler, callbackSocket, queue);
+        Thread callbackThread = new Thread(callbackHandler);
         fileOp = new FileOperations(cacheHandler);
-        callbackReceiver = new CallbackReceiver(cacheHandler);
+
+        callbackThread.start();
+        logger.info("Callback handler thread started");
 
         System.out.println(interfaceMsg);
         System.out.println();
@@ -142,8 +153,11 @@ public class ClientRunner implements Callable<Integer> {
         while (true) {
             System.out.print("nfs-client> ");
             String userInput = sc.nextLine();
-            if (userInput.trim().equals("exit"))
+            if (userInput.trim().equals("exit")) {
+                stub.close();
+                callbackThread.interrupt();
                 break;
+            }
             String[] split_input = userInput.trim().split(" ");
             processCommand(split_input);
             System.out.println();

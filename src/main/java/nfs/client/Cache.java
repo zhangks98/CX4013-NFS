@@ -1,10 +1,11 @@
 package nfs.client;
 
-import java.util.HashMap;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class Cache {
+    private final Map<String, CacheEntry> cachedFiles = new ConcurrentHashMap<>();
     private long freshnessInterval;
-    private final HashMap<String, CacheEntry> cachedFiles = new HashMap<>();
 
     public Cache(long freshnessInterval) {
         this.freshnessInterval = freshnessInterval;

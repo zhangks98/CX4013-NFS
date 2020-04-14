@@ -54,14 +54,9 @@ public class CacheHandler {
                             byte[] fileContent = optFile.get();
 
                             // file still on server
-                            if (fileContent != null) {
-                                long tMclient = System.currentTimeMillis();
-                                long tC = System.currentTimeMillis();
-                                cache.replaceFile(filePath, fileContent, tMclient, tC);
-                            }
-                            // file no longer available on server
-                            else
-                                cache.removeFile(filePath);
+                            long tMclient = System.currentTimeMillis();
+                            long tC = System.currentTimeMillis();
+                            cache.replaceFile(filePath, fileContent, tMclient, tC);
                         }
                     }
                 }
