@@ -3,7 +3,6 @@ plugins {
     id 'application'
 }
 
-group = 'sg.edu.ntu'
 version = '1.0'
 
 repositories {
@@ -28,4 +27,4 @@ test {
     }
 }
 
-mainClassName = 'sg.edu.ntu.nfs.client.ClientRunner'
+mainClassName = 'nfs.client.ClientRunner'
