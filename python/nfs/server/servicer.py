@@ -49,8 +49,8 @@ class ALOServicer:
         if not os.path.exists(combined_path):
             raise NotFoundError(
                 'File {} does not exist on the server'.format(path))
-        # TODO(ming): check whether file_path points to a file, not a directory;
-        #  what if there's a directory with the same name as the file?
+        if os.path.isdir(combined_path):
+            raise BadRequestError('{} is a directory'.format(path))
         with open(combined_path, 'rb') as f:
             content = f.read()
         return [Bytes(content)]

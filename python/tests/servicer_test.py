@@ -75,6 +75,13 @@ class TestALOServier:
         val = self.servicer.handle(req, addr)
         assert val[0].get_val() == b'test'
 
+    def test_handle_read_dir(self, fs: FakeFilesystem):
+        fs.create_dir('test')
+        req = ReadRequest(0)
+        req.add_param(Str("test"))  # Path
+        with pytest.raises(BadRequestError):
+            self.servicer.handle(req, addr)
+
     def test_duplicate_request(self):
         req = EmptyRequest(0)
         val_a = self.servicer.handle(req, addr)
