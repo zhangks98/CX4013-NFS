@@ -11,6 +11,9 @@ import org.apache.logging.log4j.Logger;
 
 import java.io.IOException;
 import java.net.*;
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.List;
 import java.util.Optional;
 import java.util.Random;
@@ -73,7 +76,9 @@ public class Proxy {
     public void touch(String filePath) throws IOException {
         invoke(new TouchRequest(filePath)).ifPresent(res -> {
             long atime = (long) res.get(0);
-            System.out.println(filePath + " last accessed at: " + atime);
+            LocalDateTime dateTime = LocalDateTime.ofInstant(
+                    Instant.ofEpochMilli(atime), ZoneId.systemDefault());
+            System.out.println(filePath + " last accessed at: " + dateTime);
         });
     }
 
@@ -111,6 +116,10 @@ public class Proxy {
      * @param monitorInterval duration for monitor file updates
      */
     public void register(String filePath, int monitorInterval) throws IOException {
+        if (monitorInterval <= 0) {
+            logger.warn("monitorInterval should be greater than 0.");
+            return;
+        }
         Request request = new RegisterRequest(filePath, monitorInterval);
         DatagramPacket req = new DatagramPacket(request.toBytes(), Serializer.BUF_SIZE, address, port);
         callbackSocket.send(req);
