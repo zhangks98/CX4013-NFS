@@ -28,11 +28,11 @@ public class CacheHandler {
      */
     public Optional<byte[]> getFile(String filePath) throws IOException {
         Optional<byte[]> optContent;
+        Optional<long[]> optAttr = stub.getAttr((filePath));;
 
         // not in cache
         if (!cache.exists(filePath)) {
             optContent = stub.requestFile(filePath);
-            Optional<long[]> optAttr = stub.getAttr((filePath));
 
             // file found on server
             if (optContent.isPresent() && optAttr.isPresent()) {
@@ -45,18 +45,13 @@ public class CacheHandler {
 
         } else {
             CacheEntry entry = cache.getFile(filePath);
-
             // check freshness upon access
-            // logger.info("Time lapsed: " + (System.currentTimeMillis() - entry.getTc()));
             if (System.currentTimeMillis() - entry.getTc() >= freshInterval) {
                 logger.info("Last validation for cached copy of " + filePath +
                         " has exceeded the freshness interval. Validating...");
 
-                Optional<long[]> optAttr = stub.getAttr((filePath));
-
                 if (optAttr.isPresent()) {
-                    long[] attr = optAttr.get();
-                    long tMserver = attr[0];
+                    long tMserver = optAttr.get()[0];
 
                     // invalid entry
                     if (entry.getTmclient() < tMserver) {

@@ -24,10 +24,13 @@ public class CacheHandlerTest {
     public void get_file() {
         String path = "abc";
         byte[] expected = new byte[] {0xa, 0xb, 0xc};
+        long[] expected_attr = new long[] {1,1};
         Optional<byte[]> opt_expected = Optional.of(expected);
+        Optional<long[]> opt_attr = Optional.of(expected_attr);
 
         try {
             when(stub.requestFile(path)).thenReturn(opt_expected);
+            when(stub.getAttr(path)).thenReturn(opt_attr);
             Optional<byte[]> actual = cacheHandler.getFile(path);
             byte[] cached = cacheHandler.getCache().getFile(path).getFileContent();
 
