@@ -55,9 +55,7 @@ class Request():
             raise ValueError('Unable to marshal request {}: wrong number of parameters. Expected: {}, Actual: {}.'.format(
                 self.name.name, self.name.num_params, len(self.__params)))
         payload = ByteBuffer.allocate(BUF_SIZE)
-        payload.put_int(self.req_id)\
-            .put_int(self.name.value)\
-            .put_int(self.name.num_params)
+        payload.put_request_header(self.req_id, self.name.value, self.name.num_params)
         for val in self.__params:
             if not isinstance(val, Value):
                 raise TypeError('Illegal value type for marshalling.')
@@ -67,15 +65,13 @@ class Request():
     @staticmethod
     def from_bytes(data: bytes) -> 'Request':
         buf = ByteBuffer.wrap(data)
-        req_id = buf.get_int()
-        req_name_ind = buf.get_int()
+        req_id, req_name_ind, num_params = buf.get_request_header()
         if req_name_ind < 0 or req_name_ind >= 8:
             raise ValueError("Unable to parse request: unknown request name")
         if req_name_ind == 7:
             raise NotImplementedError(
                 "Server does not handle FileUpdatedCallback.")
         req_name = RequestName(req_name_ind)
-        num_params = buf.get_int()
         if req_name == RequestName.EMPTY:
             req = EmptyRequest(req_id)
         elif req_name == RequestName.READ:

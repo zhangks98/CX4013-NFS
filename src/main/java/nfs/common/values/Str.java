@@ -37,8 +37,8 @@ public class Str implements Value {
 
     @Override
     public byte[] toBytes() throws InvalidClassException {
-        ByteBuffer payload = ByteBuffer.allocate(Integer.BYTES + size());
-        payload.putInt(ValueType.STRING.ordinal())
+        ByteBuffer payload = ByteBuffer.allocate(1 + size());
+        payload.put((byte) ValueType.STRING.ordinal())
                 .putInt(encodedVal.length)
                 .put(encodedVal);
         return payload.array();

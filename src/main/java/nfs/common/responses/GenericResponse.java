@@ -42,7 +42,7 @@ public class GenericResponse implements Response {
         int numValues = values.size();
         ByteBuffer payload = ByteBuffer.allocate(BUF_SIZE);
         payload.putInt(reqId)
-                .putInt(status.ordinal())
+                .put((byte) status.ordinal())
                 .putInt(numValues);
         for (Value val : values) {
             payload.put(val.toBytes());

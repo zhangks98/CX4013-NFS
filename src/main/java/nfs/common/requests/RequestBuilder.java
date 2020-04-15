@@ -11,7 +11,7 @@ public class RequestBuilder {
     public static Request parseFrom(byte[] data) throws InvalidObjectException {
         ByteBuffer buf = ByteBuffer.wrap(data);
         RequestId id = new RequestId(buf.getInt());
-        int requestNameIndex = buf.getInt();
+        int requestNameIndex = buf.get();
         if (requestNameIndex < 0 || requestNameIndex >= REQUEST_NAMES.length)
             throw new InvalidObjectException("Unable to parse request: request name index out of bound.");
         RequestName name = REQUEST_NAMES[requestNameIndex];

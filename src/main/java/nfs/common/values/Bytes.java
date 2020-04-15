@@ -32,8 +32,8 @@ public class Bytes implements Value {
 
     @Override
     public byte[] toBytes() throws InvalidClassException {
-        ByteBuffer payload = ByteBuffer.allocate(Integer.BYTES + size());
-        payload.putInt(ValueType.BYTES.ordinal())
+        ByteBuffer payload = ByteBuffer.allocate(1 + size());
+        payload.put((byte) ValueType.BYTES.ordinal())
                 .putInt(val.length)
                 .put(val);
         return payload.array();

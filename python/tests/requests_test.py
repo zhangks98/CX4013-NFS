@@ -30,7 +30,7 @@ def test_should_not_unmarshal_mismatched_param():
     serialized = expected.to_bytes()
     buf = bytearray(serialized)
     # Sets numParams to 2 in serialized message.
-    pack_into('>i', buf, 8, 2)
+    pack_into('>i', buf, 5, 2)
     with pytest.raises(ValueError) as excinfo:
         Request.from_bytes(buf)
     assert 'wrong number of parameters' in str(excinfo.value)
@@ -52,7 +52,7 @@ def test_marshall_FileUpdatedCallback():
     expected = FileUpdatedCallback(path, data)
     buf = ByteBuffer.wrap(expected.to_bytes())
     assert buf.get_int() == 0
-    assert buf.get_int() == RequestName.FILE_UPDATED.value
+    assert buf.get() == RequestName.FILE_UPDATED.value
     assert buf.get_int() == RequestName.FILE_UPDATED.num_params
     assert Value.from_bytes(buf).get_val() == path
     assert Value.from_bytes(buf).get_val() == data

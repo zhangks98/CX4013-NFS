@@ -46,7 +46,7 @@ abstract class AbstractRequest implements Request {
                     name.name(), numParams, params.size()));
         ByteBuffer payload = ByteBuffer.allocate(BUF_SIZE);
         payload.putInt(id.getId())
-                .putInt(name.ordinal())
+                .put((byte) name.ordinal())
                 .putInt(numParams);
         for (Value val : params) {
             payload.put(val.toBytes());
