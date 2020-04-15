@@ -169,7 +169,7 @@ public class Proxy {
                 if (!requestLost())
                     socket.send(req);
                 else
-                    logger.warn("The request is lost");
+                    logger.warn("The " + request.getName() + " request is lost " + (count + 1) + " time(s)");
 
                 // Receive and unmarshal the response.
                 byte[] buffer = new byte[Serializer.BUF_SIZE];

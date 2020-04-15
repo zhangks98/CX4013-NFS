@@ -32,12 +32,15 @@ public class CacheHandler {
         // not in cache
         if (!cache.exists(filePath)) {
             optContent = stub.requestFile(filePath);
+            Optional<long[]> optAttr = stub.getAttr((filePath));
+
             // file found on server
-            if (optContent.isPresent()) {
+            if (optContent.isPresent() && optAttr.isPresent()) {
                 logger.info(filePath + " is not cached. File retrieved from server.");
                 byte[] fileContent = optContent.get();
+                long tMserver = optAttr.get()[0];
                 long now = System.currentTimeMillis();
-                cache.addFile(filePath, fileContent, now, now);
+                cache.addFile(filePath, fileContent, tMserver, now);
             }
 
         } else {
@@ -57,7 +60,7 @@ public class CacheHandler {
 
                     // invalid entry
                     if (entry.getTmclient() < tMserver) {
-                        logger.info("The currently cached copy of " + filePath + " is invalid.");
+                        logger.info("The current cached copy of " + filePath + " is invalid.");
                         logger.info("Requesting latest copy from server...");
                         Optional<byte[]> optFile = stub.requestFile(filePath);
 
@@ -65,7 +68,7 @@ public class CacheHandler {
                         if (optFile.isPresent()) {
                             byte[] fileContent = optFile.get();
                             long now = System.currentTimeMillis();
-                            cache.replaceFile(filePath, fileContent, now, now);
+                            cache.replaceFile(filePath, fileContent, tMserver, now);
                             logger.info("Updated the cached copy of " + filePath + " with its latest copy on server.");
 
                         } else {
