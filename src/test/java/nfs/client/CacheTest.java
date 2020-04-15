@@ -13,7 +13,7 @@ public class CacheTest {
         long t_mclient = 1000;
         long t_c = 1200;
 
-        cache.addFile(file_path, content, t_mclient, t_c);
+        cache.putFile(file_path, content, t_mclient, t_c);
         CacheEntry cached = cache.getFile(file_path);
         assertEquals(cached.getFileContent(), content);
         assertEquals(cached.getTmclient(), t_mclient);
@@ -35,8 +35,8 @@ public class CacheTest {
         long t_mclient = 1000;
         long t_c = 1200;
 
-        cache.addFile(file_path, content, t_mclient, t_c);
-        cache.replaceFile(file_path, new_content, t_mclient, t_c);
+        cache.putFile(file_path, content, t_mclient, t_c);
+        cache.putFile(file_path, new_content, t_mclient, t_c);
         CacheEntry cached = cache.getFile(file_path);
         assertEquals(cached.getFileContent(), new_content);
         assertEquals(cached.getTmclient(), t_mclient);
@@ -50,7 +50,7 @@ public class CacheTest {
         long t_mclient = 1000;
         long t_c = 1200;
 
-        cache.addFile(file_path, content, t_mclient, t_c);
+        cache.putFile(file_path, content, t_mclient, t_c);
         cache.removeFile(file_path);
         CacheEntry cached = cache.getFile(file_path);
         assertNull(cached);

@@ -117,13 +117,15 @@ public class RequestTest {
     @Test
     public void marshallFileUpdatedRequest() throws InvalidClassException, InvalidObjectException {
         String path = "test.txt";
+        long mtime = 123;
         byte[] data = new byte[]{(byte) 0xdd, (byte) 0xee, (byte) 0xff};
-        FileUpdatedCallback expected = new FileUpdatedCallback(path, data);
+        FileUpdatedCallback expected = new FileUpdatedCallback(path, mtime, data);
         byte[] serialized = expected.toBytes();
         FileUpdatedCallback actual = (FileUpdatedCallback) RequestBuilder.parseFrom(serialized);
         assertEquals(expected.getId(), actual.getId());
         assertEquals(RequestName.FILE_UPDATED, actual.getName());
         assertEquals(path, actual.getPath());
+        assertEquals(mtime, actual.getMtime());
         assertArrayEquals(data, actual.getData());
     }
 }

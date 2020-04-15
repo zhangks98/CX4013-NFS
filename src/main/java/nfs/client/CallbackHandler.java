@@ -71,7 +71,8 @@ public class CallbackHandler implements Runnable {
      */
     void handle(FileUpdatedCallback callback) {
         String filePath = callback.getPath();
+        long mTime = callback.getMtime();
         byte[] data = callback.getData();
-        cacheHandler.updateFile(filePath, data);
+        cacheHandler.updateFile(filePath, mTime, data);
     }
 }

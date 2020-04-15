@@ -2,7 +2,7 @@ from enum import Enum, unique
 from typing import List
 
 from nfs.common.serialize import BUF_SIZE, ByteBuffer
-from nfs.common.values import Bytes, Str, Value
+from nfs.common.values import Bytes, Int64, Str, Value
 
 
 @unique
@@ -19,7 +19,7 @@ class RequestName(bytes, Enum):
     LIST_DIR = (4, 1)
     TOUCH = (5, 1)
     REGISTER = (6, 2)
-    FILE_UPDATED = (7, 2)
+    FILE_UPDATED = (7, 3)
 
 
 class Request():
@@ -163,16 +163,20 @@ class RegisterRequest(Request):
 
 
 class FileUpdatedCallback(Request):
-    def __init__(self, path: str, data: bytes):
+    def __init__(self, path: str, mtime: int, data: bytes):
         """
         Callbacks uses static id 0, since no response is needed.
         """
         super().__init__(id=0, name=RequestName.FILE_UPDATED)
         self.add_param(Str(path))
+        self.add_param(Int64(mtime))
         self.add_param(Bytes(data))
 
     def get_path(self) -> str:
         return self.get_param(0).get_val()
+    
+    def get_mtime(self) -> bytes:
+        return self.get_param(1).get_val()
 
     def get_data(self) -> bytes:
-        return self.get_param(1).get_val()
+        return self.get_param(2).get_val()
