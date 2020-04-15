@@ -1,5 +1,7 @@
 import logging
 import os
+import socket
+import time
 from pathlib import Path
 from typing import List, Optional
 
@@ -15,9 +17,10 @@ logger = logging.getLogger(__name__)
 
 
 class ALOServicer:
-    def __init__(self, root_dir, sock):
+    def __init__(self, root_dir: str, sock: socket.socket):
         self.root_dir = root_dir
         self.sock = sock
+        self.file_subscriber = {}  # path --> List<Tuple(client_identifier, time_of_register, monitor_interval)>
 
     def handle(self, req, addr) -> List[Value]:
         req_name = req.get_name()
@@ -117,7 +120,35 @@ class ALOServicer:
         return [Int64(atime)]
 
     def handle_register(self, req: RegisterRequest, addr):
-        raise NotImplementedError
+        monitor_interval = req.get_monitor_interval()
+        path = req.get_path()
+        combined_path = os.path.join(self.root_dir, path)
+        # Check whether file exists
+        if not os.path.exists(combined_path):
+            raise NotFoundError(
+                'File {} does not exist on the server'.format(path))
+        # Check whether it is a file
+        if os.path.isdir(combined_path):
+            raise BadRequestError('{} is a directory'.format(path))
+        # Register the client with the path
+        if combined_path not in self.file_subscriber:
+            self.file_subscriber[combined_path] = []
+        client_addr, client_port = self.sock.getsockname()
+        client_identifier = client_addr + ":" + client_port
+        # If already registered, update register time and monitor interval
+        for i in range(len(self.file_subscriber[combined_path])):
+            entry = self.file_subscriber[combined_path][i]
+            if entry["id"] == client_identifier:
+                entry["time_of_register"] = int(time.time() * 1000)  # Current timestamp
+                entry["monitor_interval"] = int(monitor_interval)
+                return []
+        # If not present, register it
+        self.file_subscriber[combined_path].append({
+            "id": client_identifier,
+            "time_of_register": int(time.time() * 1000),  # Current timestamp
+            "monitor_interval": int(monitor_interval)
+        })
+        return []
 
 
 class AMOServicer(ALOServicer):
