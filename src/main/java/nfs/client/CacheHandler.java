@@ -36,15 +36,19 @@ public class CacheHandler {
             if (optContent.isPresent()) {
                 logger.info(filePath + " is not cached. File retrieved from server.");
                 byte[] fileContent = optContent.get();
-                long tMclient = System.currentTimeMillis();
-                long tC = System.currentTimeMillis();
-                cache.addFile(filePath, fileContent, tMclient, tC);
+                long now = System.currentTimeMillis();
+                cache.addFile(filePath, fileContent, now, now);
             }
+
         } else {
             CacheEntry entry = cache.getFile(filePath);
-            logger.info(filePath + " retrieved from cache");
+
             // check freshness upon access
+            // logger.info("Time lapsed: " + (System.currentTimeMillis() - entry.getTc()));
             if (System.currentTimeMillis() - entry.getTc() >= freshInterval) {
+                logger.info("Last validation for cached copy of " + filePath +
+                        " has exceeded the freshness interval. Validating...");
+
                 Optional<long[]> optAttr = stub.getAttr((filePath));
 
                 if (optAttr.isPresent()) {
@@ -53,23 +57,26 @@ public class CacheHandler {
 
                     // invalid entry
                     if (entry.getTmclient() < tMserver) {
-                        // update entry
+                        logger.info("The currently cached copy of " + filePath + " is invalid.");
+                        logger.info("Requesting latest copy from server...");
                         Optional<byte[]> optFile = stub.requestFile(filePath);
 
+                        // file still on server
                         if (optFile.isPresent()) {
                             byte[] fileContent = optFile.get();
+                            long now = System.currentTimeMillis();
+                            cache.replaceFile(filePath, fileContent, now, now);
+                            logger.info("Updated the cached copy of " + filePath + " with its latest copy on server.");
 
-                            // file still on server
-                            long tMclient = System.currentTimeMillis();
-                            long tC = System.currentTimeMillis();
-                            cache.replaceFile(filePath, fileContent, tMclient, tC);
                         } else {
-                            // file no longer available on server
                             cache.removeFile(filePath);
+                            logger.info(filePath + " removed from cache since it has been removed from server.");
                         }
                     }
                 }
-            }
+            } else
+                logger.info("Retrieved " + filePath + " from cache.");
+
             optContent = Optional.of(entry.getFileContent());
         }
         return optContent;

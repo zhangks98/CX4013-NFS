@@ -73,7 +73,7 @@ public class Proxy {
     public void touch(String filePath) throws IOException {
         invoke(new TouchRequest(filePath)).ifPresent(res -> {
             long atime = (long) res.get(0);
-            System.out.println(filePath + " Last accessed at: " + atime);
+            System.out.println(filePath + " last accessed at: " + atime);
         });
     }
 

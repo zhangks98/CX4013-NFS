@@ -36,7 +36,7 @@ public class ClientRunner implements Callable<Integer> {
     private InetAddress address;
     @Parameters(index = "1", description = "The port of the file server.")
     private int port;
-    @Option(names = {"-f", "--fresh-interval"}, defaultValue = "10000",
+    @Option(names = {"-f", "--fresh-interval"}, defaultValue = "50000",
             description = "Freshness interval (in ms) of the client cache. Default value: ${DEFAULT-VALUE}")
     private long freshInterval;
     @Option(names = {"-l", "--loss-prob"}, defaultValue = "0",
