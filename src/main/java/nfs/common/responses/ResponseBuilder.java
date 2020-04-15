@@ -14,7 +14,7 @@ public class ResponseBuilder {
     public static Response parseFrom(byte[] data) throws InvalidObjectException {
         ByteBuffer buf = ByteBuffer.wrap(data);
         int reqId = buf.getInt();
-        int statusIndex = buf.getInt();
+        int statusIndex = buf.get();
         ResponseStatus status;
         if (statusIndex < 0 || statusIndex >= RESPONSE_STATUSES.length)
             status = ResponseStatus.UNKNOWN;

@@ -24,7 +24,7 @@ class Value:
 
     @staticmethod
     def from_bytes(buffer: ByteBuffer) -> 'Value':
-        value_type = buffer.get_int()
+        value_type = buffer.get()
         if value_type == ValueType.STRING.value:
             return Str.from_bytes(buffer)
         if value_type == ValueType.BYTES.value:
@@ -45,7 +45,7 @@ class Str(Value):
     def to_bytes(self) -> bytes:
         encoded = self.val.encode('utf-8')
         size = len(encoded)
-        return pack('>ii{}s'.format(len(self.val)),
+        return pack('>bi{}s'.format(len(self.val)),
                     ValueType.STRING.value, size, encoded)
 
 
@@ -57,7 +57,7 @@ class Bytes(Value):
 
     def to_bytes(self) -> bytes:
         size = len(self.val)
-        return pack('>ii{}s'.format(size),
+        return pack('>bi{}s'.format(size),
                     ValueType.BYTES.value, size, self.val)
 
 
@@ -67,7 +67,7 @@ class Int32(Value):
         return cls(buffer.get_int())
 
     def to_bytes(self) -> bytes:
-        return pack('>ii', ValueType.INT32.value, self.val)
+        return pack('>bi', ValueType.INT32.value, self.val)
 
 
 class Int64(Value):
@@ -76,4 +76,4 @@ class Int64(Value):
         return cls(buffer.get_long())
 
     def to_bytes(self) -> bytes:
-        return pack('>iq', ValueType.INT64.value, self.val)
+        return pack('>bq', ValueType.INT64.value, self.val)

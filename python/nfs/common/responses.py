@@ -35,9 +35,7 @@ class Response():
     def to_bytes(self) -> bytes:
         num_values = len(self.values)
         payload = ByteBuffer.allocate(BUF_SIZE)
-        payload.put_int(self.req_id)\
-            .put_int(self.status.value)\
-            .put_int(num_values)
+        payload.put_response_header(self.req_id, self.status.value, num_values)
         for val in self.values:
             if not isinstance(val, Value):
                 raise TypeError('Illegal value type for marshalling.')
@@ -47,13 +45,11 @@ class Response():
     @classmethod
     def from_bytes(cls, data: bytes) -> 'Response':
         buf = ByteBuffer.wrap(data)
-        req_id = buf.get_int()
-        status = buf.get_int()
+        req_id, status, num_values = buf.get_response_header()
         if status < 0 or status >= 5:
             status = ResponseStatus.UNKNOWN
         else:
             status = ResponseStatus(status)
-        num_values = buf.get_int()
         values = []
         for _ in range(num_values):
             values.append(Value.from_bytes(buf))

@@ -28,7 +28,7 @@ public class RequestTest {
         GetAttrRequest expected = new GetAttrRequest("hello.txt");
         ByteBuffer serialized = ByteBuffer.wrap(expected.toBytes());
         // Sets numParams to 2 in serialized message.
-        serialized.putInt(8, 2);
+        serialized.putInt(5, 2);
         GetAttrRequest actual = (GetAttrRequest) RequestBuilder.parseFrom(serialized.array());
     }
 
