@@ -49,7 +49,7 @@ abstract class AbstractRequest implements Request {
                 .put((byte) name.ordinal())
                 .putInt(numParams);
         for (Value val : params) {
-            payload.put(val.toBytes());
+            val.putBytes(payload);
         }
         return payload.array();
     }

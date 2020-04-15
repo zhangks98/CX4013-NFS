@@ -37,10 +37,15 @@ public class Str implements Value {
 
     @Override
     public byte[] toBytes() throws InvalidClassException {
-        ByteBuffer payload = ByteBuffer.allocate(1 + size());
-        payload.put((byte) ValueType.STRING.ordinal())
+        ByteBuffer buf = ByteBuffer.allocate(1 + size());
+        putBytes(buf);
+        return buf.array();
+    }
+
+    @Override
+    public void putBytes(ByteBuffer buf) {
+        buf.put((byte) ValueType.STRING.ordinal())
                 .putInt(encodedVal.length)
                 .put(encodedVal);
-        return payload.array();
     }
 }
