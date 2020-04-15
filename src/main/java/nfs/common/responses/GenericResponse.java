@@ -45,7 +45,7 @@ public class GenericResponse implements Response {
                 .put((byte) status.ordinal())
                 .putInt(numValues);
         for (Value val : values) {
-            payload.put(val.toBytes());
+            val.putBytes(payload);
         }
         return payload.array();
     }

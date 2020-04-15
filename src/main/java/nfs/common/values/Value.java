@@ -2,6 +2,8 @@ package nfs.common.values;
 
 import nfs.common.Serializer;
 
+import java.nio.ByteBuffer;
+
 public interface Value extends Serializer {
     /**
      * Get the byte size of the underlying value, excluding the 4-byte type information.
@@ -23,4 +25,9 @@ public interface Value extends Serializer {
      * @return value type.
      */
     Object getVal();
+
+    /**
+     * Put the value to a ByteBuffer
+     */
+    void putBytes(ByteBuffer buf);
 }
