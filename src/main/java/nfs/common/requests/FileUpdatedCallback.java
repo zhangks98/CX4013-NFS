@@ -1,6 +1,7 @@
 package nfs.common.requests;
 
 import nfs.common.values.Bytes;
+import nfs.common.values.Int64;
 import nfs.common.values.Str;
 
 public class FileUpdatedCallback extends AbstractRequest {
@@ -14,9 +15,10 @@ public class FileUpdatedCallback extends AbstractRequest {
      * @param path the path of the updated file.
      * @param data the updated file content.
      */
-    public FileUpdatedCallback(String path, byte[] data) {
+    public FileUpdatedCallback(String path, long mtime, byte[] data) {
         super(RequestName.FILE_UPDATED);
         addParam(new Str(path));
+        addParam(new Int64(mtime));
         addParam(new Bytes(data));
     }
 
@@ -28,11 +30,19 @@ public class FileUpdatedCallback extends AbstractRequest {
         setParam(0, new Str(path));
     }
 
+    public long getMtime() {
+        return (long) getParam(1).getVal();
+    }
+
+    public void setMtime(long mtime) {
+        setParam(1, new Int64(mtime));
+    }
+
     public byte[] getData() {
-        return (byte[]) getParam(1).getVal();
+        return (byte[]) getParam(2).getVal();
     }
 
     public void setData(byte[] data) {
-        setParam(1, new Bytes(data));
+        setParam(2, new Bytes(data));
     }
 }

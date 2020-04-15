@@ -38,8 +38,9 @@ def test_should_not_unmarshal_mismatched_param():
 
 def test_should_not_unmarshal_FileUpdatedCallback():
     path = 'secrets.txt'
+    mtime = 123
     data = b'password'
-    expected = FileUpdatedCallback(path, data)
+    expected = FileUpdatedCallback(path, mtime, data)
     serialized = expected.to_bytes()
     with pytest.raises(NotImplementedError) as excinfo:
         Request.from_bytes(serialized)
@@ -48,13 +49,15 @@ def test_should_not_unmarshal_FileUpdatedCallback():
 
 def test_marshall_FileUpdatedCallback():
     path = 'secrets.txt'
+    mtime = 123
     data = b'password'
-    expected = FileUpdatedCallback(path, data)
+    expected = FileUpdatedCallback(path, mtime, data)
     buf = ByteBuffer.wrap(expected.to_bytes())
     assert buf.get_int() == 0
     assert buf.get() == RequestName.FILE_UPDATED.value
     assert buf.get_int() == RequestName.FILE_UPDATED.num_params
     assert Value.from_bytes(buf).get_val() == path
+    assert Value.from_bytes(buf).get_val() == mtime
     assert Value.from_bytes(buf).get_val() == data
 
 

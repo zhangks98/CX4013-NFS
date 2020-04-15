@@ -27,67 +27,79 @@ public class CacheHandler {
      * @return file content in bytes
      */
     public Optional<byte[]> getFile(String filePath) throws IOException {
-        Optional<byte[]> optContent;
+        Optional<long[]> optAttr = stub.getAttr((filePath));
 
         // not in cache
         if (!cache.exists(filePath)) {
-            optContent = stub.requestFile(filePath);
+            Optional<byte[]> optContent = stub.requestFile(filePath);
+
             // file found on server
-            if (optContent.isPresent()) {
+            if (optContent.isPresent() && optAttr.isPresent()) {
                 logger.info(filePath + " is not cached. File retrieved from server.");
                 byte[] fileContent = optContent.get();
-                long tMclient = System.currentTimeMillis();
-                long tC = System.currentTimeMillis();
-                cache.addFile(filePath, fileContent, tMclient, tC);
+                long tMserver = optAttr.get()[0];
+                long now = System.currentTimeMillis();
+                cache.putFile(filePath, fileContent, tMserver, now);
             }
-        } else {
-            CacheEntry entry = cache.getFile(filePath);
-            logger.info(filePath + " retrieved from cache");
-            // check freshness upon access
-            if (System.currentTimeMillis() - entry.getTc() >= freshInterval) {
-                Optional<long[]> optAttr = stub.getAttr((filePath));
+            return optContent;
+        }
 
-                if (optAttr.isPresent()) {
-                    long[] attr = optAttr.get();
-                    long tMserver = attr[0];
+        // File is in the cache
+        CacheEntry entry = cache.getFile(filePath);
+        // check freshness upon access
+        if (System.currentTimeMillis() - entry.getTc() >= freshInterval) {
+            logger.info("Last validation for cached copy of " + filePath +
+                    " has exceeded the freshness interval. Validating...");
 
-                    // invalid entry
-                    if (entry.getTmclient() < tMserver) {
-                        // update entry
-                        Optional<byte[]> optFile = stub.requestFile(filePath);
+            if (optAttr.isEmpty()) {
+                cache.removeFile(filePath);
+                logger.warn(filePath + " removed from cache due to invalid file attribute.");
+                return Optional.empty();
+            } else {
+                long tMserver = optAttr.get()[0];
 
-                        if (optFile.isPresent()) {
-                            byte[] fileContent = optFile.get();
+                // invalid entry
+                if (entry.getTmclient() < tMserver) {
+                    logger.info("Invalid cached copy of " + filePath +
+                            " Requesting the latest copy from server...");
+                    Optional<byte[]> optFile = stub.requestFile(filePath);
 
-                            // file still on server
-                            long tMclient = System.currentTimeMillis();
-                            long tC = System.currentTimeMillis();
-                            cache.replaceFile(filePath, fileContent, tMclient, tC);
-                        } else {
-                            // file no longer available on server
-                            cache.removeFile(filePath);
-                        }
+                    // file still on server
+                    if (optFile.isPresent()) {
+                        byte[] fileContent = optFile.get();
+                        long now = System.currentTimeMillis();
+                        cache.putFile(filePath, fileContent, tMserver, now);
+                        logger.info("Updated the cached copy of " + filePath);
+                    } else {
+                        cache.removeFile(filePath);
+                        logger.warn(filePath + " removed from cache due to read error.");
                     }
+                    return optFile;
+
+                } else if (entry.getTmclient() > tMserver) {
+                    logger.error("Invalid file attribute: Tmclient > Tmserver");
+                    cache.removeFile(filePath);
+                    logger.warn(filePath + " removed from cache due to invalid file attribute.");
+                    return Optional.empty();
                 }
             }
-            optContent = Optional.of(entry.getFileContent());
         }
-        return optContent;
+
+        // The entry is within freshness interval or has not been modified on the server.
+        logger.info("Retrieved " + filePath + " from cache.");
+        return Optional.of(entry.getFileContent());
     }
 
     /**
      * Update a file on client: if cached, replace the old file, else add file
      *
-     * @param filePath   file path on server
+     * @param filePath   file path on server.
+     * @param tMserver   last modification time on server
      * @param newContent updated content of the file
      */
-    public void updateFile(String filePath, byte[] newContent) {
+    public void updateFile(String filePath, long tMserver, byte[] newContent) {
         long now = System.currentTimeMillis();
-        if (cache.exists(filePath)) {
-            cache.replaceFile(filePath, newContent, now, now);
-        } else {
-            cache.addFile(filePath, newContent, now, now);
-        }
+        cache.putFile(filePath, newContent, tMserver, now);
     }
 
     /**
@@ -101,15 +113,6 @@ public class CacheHandler {
      */
     public void writeFile(String filePath, int offset, byte[] data) throws IOException {
         stub.write(filePath, offset, data);
-        removeFromCache(filePath);
-    }
-
-    /**
-     * Remove a cached file
-     *
-     * @param filePath file path on the server
-     */
-    public void removeFromCache(String filePath) {
         if (cache.exists(filePath))
             cache.removeFile(filePath);
     }

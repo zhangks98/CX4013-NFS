@@ -73,7 +73,7 @@ public class Proxy {
     public void touch(String filePath) throws IOException {
         invoke(new TouchRequest(filePath)).ifPresent(res -> {
             long atime = (long) res.get(0);
-            System.out.println(filePath + " Last accessed at: " + atime);
+            System.out.println(filePath + " last accessed at: " + atime);
         });
     }
 
@@ -169,7 +169,7 @@ public class Proxy {
                 if (!requestLost())
                     socket.send(req);
                 else
-                    logger.warn("The request is lost");
+                    logger.warn("The " + request.getName() + " request is lost " + (count + 1) + " time(s)");
 
                 // Receive and unmarshal the response.
                 byte[] buffer = new byte[Serializer.BUF_SIZE];

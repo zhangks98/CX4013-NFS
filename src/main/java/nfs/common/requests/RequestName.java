@@ -8,7 +8,7 @@ public enum RequestName {
     LIST_DIR(1),
     TOUCH(1),
     REGISTER(2),
-    FILE_UPDATED(2);
+    FILE_UPDATED(3);
 
     private final int numParams;
 

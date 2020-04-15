@@ -32,7 +32,7 @@ public class FileOperationsTest {
             when(stub.requestFile(path)).thenReturn(opt_expected);
             Optional<byte[]> actual = fileOps.read(path, 0, expected.length);
 
-            assertEquals(true, actual.isPresent());
+            assertTrue(actual.isPresent());
             assertArrayEquals(expected, actual.get());
 
         } catch (IOException e) {
@@ -50,7 +50,7 @@ public class FileOperationsTest {
             when(stub.requestFile(path)).thenReturn(opt_expected);
             Optional<byte[]> actual = fileOps.read(path, 1, expected.length + 1);
 
-            assertEquals(true, actual.isPresent());
+            assertTrue(actual.isPresent());
             assertArrayEquals(Arrays.copyOfRange(expected, 1, expected.length), actual.get());
 
         } catch (Exception e) {
@@ -69,7 +69,7 @@ public class FileOperationsTest {
             when(stub.requestFile(path)).thenReturn(opt_expected);
             Optional<byte[]> actual = fileOps.read(path, expected.length, 1);
 
-            assertEquals(false, actual.isPresent());
+            assertFalse(actual.isPresent());
 
         } catch (IOException e) {
             System.out.println(e);
