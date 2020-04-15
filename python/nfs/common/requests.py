@@ -65,7 +65,7 @@ class Request():
     @staticmethod
     def from_bytes(data: bytes) -> 'Request':
         buf = ByteBuffer.wrap(data)
-        req_id, req_name_ind, num_params = buf.get_response_header()
+        req_id, req_name_ind, num_params = buf.get_request_header()
         if req_name_ind < 0 or req_name_ind >= 8:
             raise ValueError("Unable to parse request: unknown request name")
         if req_name_ind == 7:
