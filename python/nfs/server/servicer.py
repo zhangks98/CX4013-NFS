@@ -132,22 +132,22 @@ class ALOServicer:
             raise BadRequestError('{} is a directory'.format(path))
         # Register the client with the path
         if combined_path not in self.file_subscriber:
-            self.file_subscriber[combined_path] = []
+            self.file_subscriber[combined_path] = {}
         client_addr, client_port = self.sock.getsockname()
-        client_identifier = client_addr + ":" + client_port
+        client_identifier = str(client_addr) + ":" + str(client_port)
         # If already registered, update register time and monitor interval
-        for i in range(len(self.file_subscriber[combined_path])):
-            entry = self.file_subscriber[combined_path][i]
-            if entry["id"] == client_identifier:
-                entry["time_of_register"] = int(time.time() * 1000)  # Current timestamp
-                entry["monitor_interval"] = int(monitor_interval)
-                return []
+        if client_identifier in self.file_subscriber[combined_path]:
+            self.file_subscriber[combined_path][client_identifier] = {
+                "time_of_register": int(time.time() * 1000),  # Current timestamp
+                "monitor_interval": int(monitor_interval)
+            }
+            return []
         # If not present, register it
-        self.file_subscriber[combined_path].append({
+        self.file_subscriber[combined_path][client_identifier] = {
             "id": client_identifier,
             "time_of_register": int(time.time() * 1000),  # Current timestamp
             "monitor_interval": int(monitor_interval)
-        })
+        }
         return []
 
 
