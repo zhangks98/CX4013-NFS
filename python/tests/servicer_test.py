@@ -18,6 +18,7 @@ mock_socket.getsockname.return_value = (addr, port)
 
 ROOT_DIR = "."
 
+
 def get_memory_addr(var):
     """
     Returns the actual memory address of that variable;

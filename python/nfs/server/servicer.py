@@ -41,6 +41,15 @@ class ALOServicer:
             "monitor_interval": monitor_interval
         }
 
+    def validate_file_path(self, path: str, combined_path: str):
+        logger.debug("path: {}".format(path))
+        logger.debug("Combined path: {}".format(combined_path))
+        if not os.path.exists(combined_path):
+            raise NotFoundError(
+                'File {} does not exist on the server'.format(path))
+        if os.path.isdir(combined_path):
+            raise BadRequestError('{} is a directory'.format(path))
+
     def send_update(self, path_to_file: str, mtime: int, data: bytes):
         if path_to_file not in self.file_subscribers:
             # No client subscribed to this file
@@ -80,15 +89,8 @@ class ALOServicer:
 
     def handle_read(self, req: ReadRequest):
         path = req.get_path()
-        logger.debug("path: {}".format(path))
         combined_path = os.path.join(self.root_dir, path)
-        logger.debug("Combined path: {}".format(combined_path))
-        # Check whether file_path exists
-        if not os.path.exists(combined_path):
-            raise NotFoundError(
-                'File {} does not exist on the server'.format(path))
-        if os.path.isdir(combined_path):
-            raise BadRequestError('{} is a directory'.format(path))
+        self.validate_file_path(path, combined_path)
         with open(combined_path, 'rb') as f:
             content = f.read()
         return [Bytes(content)]
@@ -100,13 +102,7 @@ class ALOServicer:
         logger.debug(
             "Arguments - path: {}, offset: {}, data: {}".format(path, offset, data))
         combined_path = os.path.join(self.root_dir, path)
-        logger.debug("Combined path: {}".format(combined_path))
-        # If file does not exist on the server, returns error
-        if not os.path.exists(combined_path):
-            raise NotFoundError(
-                'File {} does not exist on the server'.format(path))
-        if os.path.isdir(combined_path):
-            raise BadRequestError('{} is a directory'.format(path))
+        self.validate_file_path(path, combined_path)
         # If offset exceeds the file length, returns error
         file_size = os.path.getsize(combined_path)
         if offset > file_size:
@@ -132,9 +128,7 @@ class ALOServicer:
         logger.debug("Arguments - path: {}".format(path))
         combined_path = os.path.join(self.root_dir, path)
         logger.debug("Combined path: {}".format(combined_path))
-        if not os.path.exists(combined_path):
-            raise NotFoundError(
-                'File {} does not exist on the server'.format(path))
+        self.validate_file_path(path, combined_path)
         atime = int(os.path.getatime(combined_path) * 1000)
         mtime = int(os.path.getmtime(combined_path) * 1000)
         return [Int64(mtime), Int64(atime)]
@@ -163,16 +157,10 @@ class ALOServicer:
         monitor_interval = req.get_monitor_interval()
         path = req.get_path()
         combined_path = os.path.join(self.root_dir, path)
-        # Check whether file exists
-        if not os.path.exists(combined_path):
-            raise NotFoundError(
-                'File {} does not exist on the server'.format(path))
-        # Check whether it is a file
-        if os.path.isdir(combined_path):
-            raise BadRequestError('{} is a directory'.format(path))
+        self.validate_file_path(path, combined_path)
         current_timestamp = self.get_current_timestamp_second()
         self.update_file_subscribers(file_path=combined_path, client_addr=client_addr,
-                                     time_of_register=current_timestamp, monitor_interval=int(monitor_interval))
+                                     time_of_register=current_timestamp, monitor_interval=monitor_interval)
         return []
 
 
