@@ -12,6 +12,7 @@ from nfs.common.requests import (EmptyRequest, FileUpdatedCallback,
                                  TouchRequest, WriteRequest)
 from nfs.common.responses import Response, ResponseStatus
 from nfs.common.values import Bytes, Int32, Int64, Str, Value
+from nfs.common.client import Client
 
 logger = logging.getLogger(__name__)
 
@@ -20,7 +21,25 @@ class ALOServicer:
     def __init__(self, root_dir: str, sock: socket.socket):
         self.root_dir = root_dir
         self.sock = sock
-        self.file_subscriber = {}  # path --> List<Tuple(client_identifier, time_of_register, monitor_interval)>
+        self.file_subscriber = {}  # file_path --> Dict<client_identifier, { time_of_register, monitor_interval }>
+
+    def send_update(self, path_to_file: str, data: Bytes):
+        if path_to_file not in self.file_subscriber:
+            # No client subscribed to this file
+            return
+        subscriber_map: dict = self.file_subscriber[path_to_file]
+        for client_hash in subscriber_map.copy():
+            registry_info: dict = subscriber_map[client_hash]
+            if time.time() * 1000 > registry_info["time_of_register"] + registry_info["monitor_interval"]:
+                # Expired, remove it
+                del subscriber_map[client_hash]
+            else:
+                # Send update
+                callback_req = FileUpdatedCallback()
+                callback_req.add_param(Str(path_to_file))
+                callback_req.add_param(Int64(int(time.time() * 1000)))  # This will be later than actual mtime
+                callback_req.add_param(Bytes(data))
+                self.sock.send(callback_req.to_bytes())
 
     def handle(self, req, addr) -> List[Value]:
         req_name = req.get_name()
@@ -84,6 +103,10 @@ class ALOServicer:
             f.truncate()  # Remove the content after offset
             f.write(data)  # Append the data
             f.write(remaining_content)  # Append the remaining content
+            f.seek(0)
+            file_content = f.read()
+        # Update subscribers
+        self.send_update(combined_path, file_content)
         # Returns an acknowledgement to the client upon successful write
         return []
 
@@ -134,17 +157,17 @@ class ALOServicer:
         if combined_path not in self.file_subscriber:
             self.file_subscriber[combined_path] = {}
         client_addr, client_port = self.sock.getsockname()
-        client_identifier = str(client_addr) + ":" + str(client_port)
+        client = Client(client_addr, client_port)
+        client_hash = client.get_hash()
         # If already registered, update register time and monitor interval
-        if client_identifier in self.file_subscriber[combined_path]:
-            self.file_subscriber[combined_path][client_identifier] = {
+        if client_hash in self.file_subscriber[combined_path]:
+            self.file_subscriber[combined_path][client_hash] = {
                 "time_of_register": int(time.time() * 1000),  # Current timestamp
                 "monitor_interval": int(monitor_interval)
             }
             return []
         # If not present, register it
-        self.file_subscriber[combined_path][client_identifier] = {
-            "id": client_identifier,
+        self.file_subscriber[combined_path][client_hash] = {
             "time_of_register": int(time.time() * 1000),  # Current timestamp
             "monitor_interval": int(monitor_interval)
         }
