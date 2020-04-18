@@ -21,19 +21,23 @@ class ALOServicer:
         self.sock = sock
         self.file_subscriber = {}  # file_path --> Dict<client_addr, { time_of_register, monitor_interval }>
 
-    def send_update(self, path_to_file: str, data: bytes):
+    def get_current_timestamp_second(self):
+        return int(time.time() * 1000)
+
+    def send_update(self, path_to_file: str, mtime: int, data: bytes):
         if path_to_file not in self.file_subscriber:
             # No client subscribed to this file
             return
         subscriber_map: dict = self.file_subscriber[path_to_file]
         for client_addr in subscriber_map.copy():
             registry_info: dict = subscriber_map[client_addr]
-            if time.time() * 1000 > registry_info["time_of_register"] + registry_info["monitor_interval"]:
+            if self.get_current_timestamp_second() > registry_info["time_of_register"] + registry_info[
+                "monitor_interval"]:
                 # Expired, remove it
                 del subscriber_map[client_addr]
             else:
                 # Send update
-                callback_req = FileUpdatedCallback(path=path_to_file, mtime=int(time.time() * 1000), data=data)
+                callback_req = FileUpdatedCallback(path=path_to_file, mtime=mtime, data=data)
                 self.sock.sendto(callback_req.to_bytes(), client_addr)
 
     def handle(self, req, addr) -> List[Value]:
@@ -101,7 +105,8 @@ class ALOServicer:
             f.seek(0)
             file_content = f.read()
         # Update subscribers
-        self.send_update(combined_path, file_content)
+        mtime = int(os.path.getmtime(combined_path) * 1000)
+        self.send_update(path_to_file=combined_path, mtime=mtime, data=file_content)
         # Returns an acknowledgement to the client upon successful write
         return []
 
@@ -152,15 +157,16 @@ class ALOServicer:
         if combined_path not in self.file_subscriber:
             self.file_subscriber[combined_path] = {}
         # If already registered, update register time and monitor interval
+        current_timestamp = self.get_current_timestamp_second()
         if client_addr in self.file_subscriber[combined_path]:
             self.file_subscriber[combined_path][client_addr] = {
-                "time_of_register": int(time.time() * 1000),  # Current timestamp
+                "time_of_register": int(current_timestamp * 1000),  # Current timestamp
                 "monitor_interval": int(monitor_interval)
             }
             return []
         # If not present, register it
         self.file_subscriber[combined_path][client_addr] = {
-            "time_of_register": int(time.time() * 1000),  # Current timestamp
+            "time_of_register": int(current_timestamp * 1000),  # Current timestamp
             "monitor_interval": int(monitor_interval)
         }
         return []
@@ -171,13 +177,11 @@ class AMOServicer(ALOServicer):
         super().__init__(root_dir, sock)
         self.historyMap = {}
 
-    # TODO(ming): use explicit type for addr
-    def _create_identifier(self, req: Request, addr: any) -> str:
+    def create_identifier(self, req: Request, addr: any) -> str:
         return str(req.get_id()) + ":" + str(addr)
 
-    # TODO(ming): use explicit type for addr
     def _is_duplicate_request(self, req: Request, addr: any) -> Optional[List[Value]]:
-        identifier = self._create_identifier(req, addr)
+        identifier = self.create_identifier(req, addr)
         if identifier not in self.historyMap:
             return None
         return self.historyMap[identifier]
@@ -188,7 +192,7 @@ class AMOServicer(ALOServicer):
             return stored_res
         # Call handle from parent class
         res = super().handle(req, addr)
-        identifier = self._create_identifier(req, addr)
+        identifier = self.create_identifier(req, addr)
         # Save it to history
         self.historyMap[identifier] = res
         return res
