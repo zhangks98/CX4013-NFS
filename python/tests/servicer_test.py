@@ -98,18 +98,18 @@ class TestALOServier:
         client_addr = addr
         combined_path = os.path.join(ROOT_DIR, file_path)
         # Should be able to find the combined path in file_subscriber
-        assert combined_path in self.servicer.file_subscriber
+        assert combined_path in self.servicer.file_subscribers
         # Should be able to find the client identifier in file_subscriber
-        assert client_addr in self.servicer.file_subscriber[combined_path]
+        assert client_addr in self.servicer.file_subscribers[combined_path]
         # Should be able to find monitor_interval associated with that client
-        assert self.servicer.file_subscriber[combined_path][client_addr]["monitor_interval"] == monitor_interval
+        assert self.servicer.file_subscribers[combined_path][client_addr]["monitor_interval"] == monitor_interval
         # Update register
         monitor_interval = 200
         req = RegisterRequest(0)
         req.add_param(Int32(200))  # monitor_interval
         req.add_param(Str(file_path))  # Path
         self.servicer.handle(req, addr)
-        assert self.servicer.file_subscriber[combined_path][client_addr]["monitor_interval"] == monitor_interval
+        assert self.servicer.file_subscribers[combined_path][client_addr]["monitor_interval"] == monitor_interval
 
     def test_duplicate_request(self):
         req = EmptyRequest(0)

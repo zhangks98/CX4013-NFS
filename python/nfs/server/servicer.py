@@ -19,16 +19,33 @@ class ALOServicer:
     def __init__(self, root_dir: str, sock: socket.socket):
         self.root_dir = root_dir
         self.sock = sock
-        self.file_subscriber = {}  # file_path --> Dict<client_addr, { time_of_register, monitor_interval }>
+        self.file_subscribers = {}  # file_path --> Dict<client_addr, { time_of_register, monitor_interval }>
 
     def get_current_timestamp_second(self):
         return int(time.time() * 1000)
 
+    def update_file_subscribers(self, file_path: str, client_addr: str, time_of_register: int, monitor_interval: int):
+        # Register the client with the path
+        if file_path not in self.file_subscribers:
+            self.file_subscribers[file_path] = {}
+        # If already registered, update register time and monitor interval
+        if client_addr in self.file_subscribers[file_path]:
+            self.file_subscribers[file_path][client_addr] = {
+                "time_of_register": time_of_register,  # Current timestamp
+                "monitor_interval": monitor_interval
+            }
+            return []
+        # If not present, register it
+        self.file_subscribers[file_path][client_addr] = {
+            "time_of_register": time_of_register,  # Current timestamp
+            "monitor_interval": monitor_interval
+        }
+
     def send_update(self, path_to_file: str, mtime: int, data: bytes):
-        if path_to_file not in self.file_subscriber:
+        if path_to_file not in self.file_subscribers:
             # No client subscribed to this file
             return
-        subscriber_map: dict = self.file_subscriber[path_to_file]
+        subscriber_map: dict = self.file_subscribers[path_to_file]
         for client_addr in subscriber_map.copy():
             registry_info: dict = subscriber_map[client_addr]
             if self.get_current_timestamp_second() > registry_info["time_of_register"] + registry_info[
@@ -153,22 +170,9 @@ class ALOServicer:
         # Check whether it is a file
         if os.path.isdir(combined_path):
             raise BadRequestError('{} is a directory'.format(path))
-        # Register the client with the path
-        if combined_path not in self.file_subscriber:
-            self.file_subscriber[combined_path] = {}
-        # If already registered, update register time and monitor interval
         current_timestamp = self.get_current_timestamp_second()
-        if client_addr in self.file_subscriber[combined_path]:
-            self.file_subscriber[combined_path][client_addr] = {
-                "time_of_register": int(current_timestamp * 1000),  # Current timestamp
-                "monitor_interval": int(monitor_interval)
-            }
-            return []
-        # If not present, register it
-        self.file_subscriber[combined_path][client_addr] = {
-            "time_of_register": int(current_timestamp * 1000),  # Current timestamp
-            "monitor_interval": int(monitor_interval)
-        }
+        self.update_file_subscribers(file_path=combined_path, client_addr=client_addr,
+                                     time_of_register=current_timestamp, monitor_interval=int(monitor_interval))
         return []
 
 
