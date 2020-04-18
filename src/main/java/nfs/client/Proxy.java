@@ -185,6 +185,10 @@ public class Proxy {
                 DatagramPacket res = new DatagramPacket(buffer, Serializer.BUF_SIZE);
                 socket.receive(res);
                 Response response = ResponseBuilder.parseFrom(buffer);
+                if (response.getReqId() != request.getId()) {
+                    logger.error(String.format("Error invoking %s: Request id mismatch", request.getName()));
+                    return Optional.empty();
+                }
                 if (response.getStatus() == ResponseStatus.OK) {
                     return Optional.of(response.getValues()
                             .stream()
