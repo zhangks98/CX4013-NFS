@@ -7,19 +7,32 @@ from nfs.common.values import Bytes, Int64, Str, Value
 
 @unique
 class RequestName(bytes, Enum):
-    def __new__(cls, value, num_params):
+    def __new__(cls, value, num_params, req_cls):
+        """
+        The constructor for a RequestName Enum.
+
+        Args:
+            value: The numeric tag for the request name.
+            num_params: The number of parameters for the request.
+            req_cls: The constructor for the request, used for deserializing.
+        """
         obj = bytes.__new__(cls, [value])
         obj._value_ = value
         obj.num_params = num_params
+        obj.req_cls = req_cls
         return obj
-    EMPTY = (0, 0)
-    READ = (1, 1)
-    WRITE = (2, 3)
-    GET_ATTR = (3, 1)
-    LIST_DIR = (4, 1)
-    TOUCH = (5, 1)
-    REGISTER = (6, 2)
-    FILE_UPDATED = (7, 3)
+
+    # Pass the constructor as an anonymous function to avoid circular dependency.
+    EMPTY = (0, 0, lambda id: EmptyRequest(id))
+    READ = (1, 1, lambda id: ReadRequest(id))
+    WRITE = (2, 3, lambda id: WriteRequest(id))
+    GET_ATTR = (3, 1, lambda id: GetAttrRequest(id))
+    LIST_DIR = (4, 1, lambda id: ListDirRequest(id))
+    TOUCH = (5, 1, lambda id: TouchRequest(id))
+    REGISTER = (6, 2, lambda id: RegisterRequest(id))
+
+    # FileUpdatedCallback does not construct from parser.
+    FILE_UPDATED = (7, 3, None)
 
 
 class Request():
@@ -55,7 +68,8 @@ class Request():
             raise ValueError('Unable to marshal request {}: wrong number of parameters. Expected: {}, Actual: {}.'.format(
                 self.name.name, self.name.num_params, len(self.__params)))
         payload = ByteBuffer.allocate(BUF_SIZE)
-        payload.put_request_header(self.req_id, self.name.value, self.name.num_params)
+        payload.put_request_header(
+            self.req_id, self.name.value, self.name.num_params)
         for val in self.__params:
             if not isinstance(val, Value):
                 raise TypeError('Illegal value type for marshalling.')
@@ -71,21 +85,7 @@ class Request():
         if req_name_ind == 7:
             raise NotImplementedError(
                 "Server does not handle FileUpdatedCallback.")
-        req_name = RequestName(req_name_ind)
-        if req_name == RequestName.EMPTY:
-            req = EmptyRequest(req_id)
-        elif req_name == RequestName.READ:
-            req = ReadRequest(req_id)
-        elif req_name == RequestName.WRITE:
-            req = WriteRequest(req_id)
-        elif req_name == RequestName.GET_ATTR:
-            req = GetAttrRequest(req_id)
-        elif req_name == RequestName.LIST_DIR:
-            req = ListDirRequest(req_id)
-        elif req_name == RequestName.TOUCH:
-            req = TouchRequest(req_id)
-        elif req_name == RequestName.REGISTER:
-            req = RegisterRequest(req_id)
+        req = RequestName(req_name_ind).req_cls(req_id)
 
         if num_params != req.get_name().num_params:
             raise ValueError('Unable to parse request {}: wrong number of parameters. Expected: {}, Actual: {}.'.format(
@@ -170,7 +170,7 @@ class FileUpdatedCallback(Request):
 
     def get_path(self) -> str:
         return self.get_param(0).get_val()
-    
+
     def get_mtime(self) -> int:
         return self.get_param(1).get_val()
 

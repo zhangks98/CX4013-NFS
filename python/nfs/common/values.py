@@ -4,14 +4,6 @@ from struct import pack
 from nfs.common.serialize import ByteBuffer
 
 
-@unique
-class ValueType(Enum):
-    STRING = 0
-    BYTES = 1
-    INT32 = 2
-    INT64 = 3
-
-
 class Value:
     def __init__(self, val):
         self.val = val
@@ -25,15 +17,9 @@ class Value:
     @staticmethod
     def from_bytes(buffer: ByteBuffer) -> 'Value':
         value_type = buffer.get()
-        if value_type == ValueType.STRING.value:
-            return Str.from_bytes(buffer)
-        if value_type == ValueType.BYTES.value:
-            return Bytes.from_bytes(buffer)
-        if value_type == ValueType.INT32.value:
-            return Int32.from_bytes(buffer)
-        if value_type == ValueType.INT64.value:
-            return Int64.from_bytes(buffer)
-        raise ValueError("No such value type: {}".format(value_type))
+        if value_type < 0 or value_type >= 4:
+            raise ValueError("No such value type: {}".format(value_type))
+        return ValueType(value_type).val_cls.from_bytes(buffer)
 
 
 class Str(Value):
@@ -77,3 +63,16 @@ class Int64(Value):
 
     def to_bytes(self) -> bytes:
         return pack('>bq', ValueType.INT64.value, self.val)
+
+
+@unique
+class ValueType(bytes, Enum):
+    def __new__(cls, value, val_cls: Value):
+        obj = bytes.__new__(cls, [value])
+        obj._value_ = value
+        obj.val_cls = val_cls
+        return obj
+    STRING = (0, Str)
+    BYTES = (1, Bytes)
+    INT32 = (2, Int32)
+    INT64 = (3, Int64)

@@ -2,6 +2,7 @@ package nfs.common.values;
 
 import nfs.common.Serializer;
 
+import java.io.InvalidObjectException;
 import java.nio.ByteBuffer;
 
 public interface Value extends Serializer {
@@ -30,4 +31,16 @@ public interface Value extends Serializer {
      * Put the value to a ByteBuffer
      */
     void putBytes(ByteBuffer buf);
+
+    class Builder {
+        private static final ValueType[] VALUE_TYPES = ValueType.values();
+
+        public static Value parseFrom(ByteBuffer data) throws InvalidObjectException {
+            int valueTypeIndex = data.get();
+            if (valueTypeIndex < 0 || valueTypeIndex >= VALUE_TYPES.length)
+                throw new InvalidObjectException("Unable to parse value: no matching value type.");
+            ValueType type = VALUE_TYPES[valueTypeIndex];
+            return type.build(data);
+        }
+    }
 }

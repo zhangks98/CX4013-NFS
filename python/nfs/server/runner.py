@@ -68,7 +68,8 @@ def main():
                 sock.sendto(res.to_bytes(), addr)
                 continue
 
-            logger.info('Received %s #%s from %s', req.get_name().name, req.get_id(), addr)
+            logger.info('Received %s #%s from %s',
+                        req.get_name().name, req.get_id(), addr)
 
             try:
                 vals = servicer.handle(req, addr)
