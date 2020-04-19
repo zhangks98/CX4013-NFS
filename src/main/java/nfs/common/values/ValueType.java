@@ -20,7 +20,7 @@ public enum ValueType {
 }
 
 /**
- * A functional interface to the constructor of a request type.
+ * A functional interface to the constructor of a value type.
  */
 interface ValueConstructor {
     /**

@@ -112,9 +112,9 @@ public class CacheHandler {
      * @throws IOException
      */
     public void writeFile(String filePath, int offset, byte[] data) throws IOException {
-        stub.write(filePath, offset, data);
         if (cache.exists(filePath))
             cache.removeFile(filePath);
+        stub.write(filePath, offset, data);
     }
 
     public Cache getCache() {
