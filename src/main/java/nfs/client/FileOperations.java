@@ -5,6 +5,7 @@ import org.apache.logging.log4j.Logger;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.Optional;
 
@@ -25,7 +26,7 @@ public class FileOperations {
      * @return an Optional object of bytes
      */
     public Optional<byte[]> read(String filePath, int offset, int count) throws IOException {
-
+        filePath = Paths.get(filePath).normalize().toString();
         Optional<byte[]> optFile = cacheHandler.getFile(filePath);
         byte[] slice = null;
 
@@ -54,6 +55,7 @@ public class FileOperations {
      * @throws IOException
      */
     public void write(String filePath, int offset, byte[] data) throws IOException {
+        filePath = Paths.get(filePath).normalize().toString();
         cacheHandler.writeFile(filePath, offset, data);
     }
 

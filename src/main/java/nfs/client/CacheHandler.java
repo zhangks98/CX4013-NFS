@@ -48,7 +48,7 @@ public class CacheHandler {
         CacheEntry entry = cache.getFile(filePath);
         // check freshness upon access
         if (System.currentTimeMillis() - entry.getTc() >= freshInterval) {
-            logger.info("Last validation for cached copy of " + filePath +
+            logger.info("Cached copy of " + filePath +
                     " has exceeded the freshness interval. Validating...");
 
             if (optAttr.isEmpty()) {

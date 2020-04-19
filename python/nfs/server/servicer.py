@@ -121,7 +121,7 @@ class ALOServicer:
             file_content = f.read()
         # Update subscribers
         mtime = int(os.path.getmtime(combined_path) * 1000)
-        self.send_update(path_to_file=combined_path,
+        self.send_update(path_to_file=path,
                          mtime=mtime, data=file_content)
         # Returns an acknowledgement to the client upon successful write
         return []
@@ -162,7 +162,7 @@ class ALOServicer:
         combined_path = os.path.join(self.root_dir, path)
         self.validate_file_path(path, combined_path)
         current_timestamp = self.get_current_timestamp_second()
-        self.update_file_subscribers(file_path=combined_path, client_addr=client_addr,
+        self.update_file_subscribers(file_path=path, client_addr=client_addr,
                                      time_of_register=current_timestamp, monitor_interval=monitor_interval)
         return []
 
