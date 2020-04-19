@@ -19,6 +19,7 @@ logger = logging.getLogger(__name__)
 
 def send_response(sock: socket.socket, addr: str, res: Response, loss_prob: int):
     if random.random() < loss_prob:
+        logger.info('Response to request #{} is lost'.format(res.get_req_id()))
         return
     sock.sendto(res.to_bytes(), addr)
 
@@ -93,18 +94,18 @@ def main():
                                req.get_name().name, e)
                 res = Response(
                     req.get_id(), ResponseStatus.BAD_REQUEST, [Str(str(e))])
-                send_response(sock, addr, res, LOSS_PROB)
+                sock.sendto(res.to_bytes(), addr)
             except NotFoundError as e:
                 logger.warning('Resources not found for %s: %s',
                                req.get_name().name, e)
                 res = Response(
                     req.get_id(), ResponseStatus.NOT_FOUND, [Str(str(e))])
-                send_response(sock, addr, res, LOSS_PROB)
+                sock.sendto(res.to_bytes(), addr)
             except Exception as e:
                 logger.exception('Error handling %s', req.get_name().name)
                 res = Response(
                     req.get_id(), ResponseStatus.INTERNAL_ERROR, [Str(str(e))])
-                send_response(sock, addr, res, LOSS_PROB)
+                sock.sendto(res.to_bytes(), addr)
 
     except KeyboardInterrupt:
         logger.info('Shutting down...')
