@@ -1,7 +1,6 @@
 package nfs.common.responses;
 
 import nfs.common.values.Value;
-import nfs.common.values.ValueBuilder;
 
 import java.io.InvalidObjectException;
 import java.nio.ByteBuffer;
@@ -23,7 +22,7 @@ public class ResponseBuilder {
         int numValues = buf.getInt();
         List<Value> values = new ArrayList<>(numValues);
         for (int i = 0; i < numValues; i++) {
-            values.add(ValueBuilder.parseFrom(buf));
+            values.add(Value.Builder.parseFrom(buf));
         }
         return new GenericResponse(reqId, status, values);
     }

@@ -42,7 +42,7 @@ class ByteBuffer():
         pack_into('>{}s'.format(len(v)), self.buf, self.offset, v)
         self.offset += len(v)
         return self
-    
+
     def put_request_header(self, req_id: int, name_id: int, num_params: int):
         pack_into('>ibi', self.buf, self.offset, req_id, name_id, num_params)
         self.offset += INTEGER_BYTES * 2 + 1
@@ -72,7 +72,7 @@ class ByteBuffer():
         v = unpack_from('>{}s'.format(size), self.buf, self.offset)[0]
         self.offset += size
         return v
-    
+
     def get_request_header(self) -> Tuple[int, int, int]:
         v = unpack_from('>ibi', self.buf, self.offset)
         self.offset += INTEGER_BYTES * 2 + 1

@@ -19,7 +19,8 @@ class ALOServicer:
     def __init__(self, root_dir: str, sock: socket.socket):
         self.root_dir = root_dir
         self.sock = sock
-        self.file_subscribers = {}  # file_path --> Dict<client_addr, { time_of_register, monitor_interval }>
+        # file_path --> Dict<client_addr, { time_of_register, monitor_interval }>
+        self.file_subscribers = {}
 
     def get_current_timestamp_second(self):
         return int(time.time() * 1000)
@@ -58,12 +59,13 @@ class ALOServicer:
         for client_addr in subscriber_map.copy():
             registry_info: dict = subscriber_map[client_addr]
             if self.get_current_timestamp_second() > registry_info["time_of_register"] + registry_info[
-                "monitor_interval"]:
+                    "monitor_interval"]:
                 # Expired, remove it
                 del subscriber_map[client_addr]
             else:
                 # Send update
-                callback_req = FileUpdatedCallback(path=path_to_file, mtime=mtime, data=data)
+                callback_req = FileUpdatedCallback(
+                    path=path_to_file, mtime=mtime, data=data)
                 self.sock.sendto(callback_req.to_bytes(), client_addr)
 
     def handle(self, req, addr) -> List[Value]:
@@ -119,7 +121,8 @@ class ALOServicer:
             file_content = f.read()
         # Update subscribers
         mtime = int(os.path.getmtime(combined_path) * 1000)
-        self.send_update(path_to_file=combined_path, mtime=mtime, data=file_content)
+        self.send_update(path_to_file=path,
+                         mtime=mtime, data=file_content)
         # Returns an acknowledgement to the client upon successful write
         return []
 
@@ -159,7 +162,7 @@ class ALOServicer:
         combined_path = os.path.join(self.root_dir, path)
         self.validate_file_path(path, combined_path)
         current_timestamp = self.get_current_timestamp_second()
-        self.update_file_subscribers(file_path=combined_path, client_addr=client_addr,
+        self.update_file_subscribers(file_path=path, client_addr=client_addr,
                                      time_of_register=current_timestamp, monitor_interval=monitor_interval)
         return []
 

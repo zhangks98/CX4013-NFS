@@ -11,6 +11,7 @@ import org.apache.logging.log4j.Logger;
 
 import java.io.IOException;
 import java.net.*;
+import java.nio.file.Paths;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
@@ -116,6 +117,7 @@ public class Proxy {
      * @param monitorInterval duration for monitor file updates
      */
     public void register(String filePath, int monitorInterval) throws IOException {
+        filePath = Paths.get(filePath).normalize().toString();
         if (monitorInterval <= 0) {
             logger.warn("monitorInterval should be greater than 0.");
             return;

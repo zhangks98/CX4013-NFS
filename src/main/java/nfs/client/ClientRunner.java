@@ -18,6 +18,7 @@ import java.util.concurrent.SynchronousQueue;
 @Command(description = "The client for remote file access.", name = "nfs-client", mixinStandardHelpOptions = true)
 public class ClientRunner implements Callable<Integer> {
     private static final Logger logger = LogManager.getLogger();
+    private final Scanner sc = new Scanner(System.in);
     String interfaceMsg = "\n================== Client User Interface =================\n"
             + "The following commands are available:     \n"
             + "<> - required arguments\n"
@@ -29,7 +30,6 @@ public class ClientRunner implements Callable<Integer> {
             + "| ls [dir]                                           |\n"
             + "| help                                               |\n"
             + "| exit                                               |";
-    private final Scanner sc = new Scanner(System.in);
     private FileOperations fileOp;
     private Proxy stub;
     @Parameters(index = "0", description = "The address of the file server.")

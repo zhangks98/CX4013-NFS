@@ -4,7 +4,6 @@ import nfs.common.Serializer;
 import nfs.common.exceptions.BadRequestException;
 import nfs.common.exceptions.NotFoundException;
 import nfs.common.requests.Request;
-import nfs.common.requests.RequestBuilder;
 import nfs.common.responses.GenericResponse;
 import nfs.common.responses.Response;
 import nfs.common.responses.ResponseStatus;
@@ -70,7 +69,7 @@ public class ServerRunner implements Callable<Integer> {
             socket.receive(request);
 
             // Unmarshal the request.
-            Request req = RequestBuilder.parseFrom(request.getData());
+            Request req = Request.Builder.parseFrom(request.getData());
             Context ctx = new Context(request.getAddress(), request.getPort());
             logger.info(String.format("Received: %s", req.getName()));
 

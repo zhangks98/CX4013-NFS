@@ -28,13 +28,13 @@ public class ResponseTest {
     @Test
     public void responseMarshalling() throws InvalidClassException, InvalidObjectException {
         List<Value> valueList = new ArrayList<>();
-        valueList.add(new Int64(1L));
-        valueList.add(new Int32(2));
+        valueList.add(new Int64(Long.MIN_VALUE));
+        valueList.add(new Int32(Integer.MIN_VALUE));
         Response expected = new GenericResponse(0, ResponseStatus.OK, valueList);
         byte[] serialized = expected.toBytes();
         Response actual = ResponseBuilder.parseFrom(serialized);
         assertEquals(0, actual.getReqId());
-        assertEquals(1L, (long) valueList.get(0).getVal());
-        assertEquals(2, (int) valueList.get(1).getVal());
+        assertEquals(Long.MIN_VALUE, (long) valueList.get(0).getVal());
+        assertEquals(Integer.MIN_VALUE, (int) valueList.get(1).getVal());
     }
 }

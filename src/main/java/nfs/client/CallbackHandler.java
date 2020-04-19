@@ -4,7 +4,6 @@ import nfs.common.Serializer;
 import nfs.common.exceptions.BadRequestException;
 import nfs.common.requests.FileUpdatedCallback;
 import nfs.common.requests.Request;
-import nfs.common.requests.RequestBuilder;
 import nfs.common.requests.RequestName;
 import nfs.common.responses.Response;
 import nfs.common.responses.ResponseBuilder;
@@ -43,7 +42,7 @@ public class CallbackHandler implements Runnable {
 
                 if (req_id == CALLBACK_REQ_ID) {
                     // If the packet is a callback request.
-                    Request req = RequestBuilder.parseFrom(data);
+                    Request req = Request.Builder.parseFrom(data);
                     if (req.getName() != RequestName.FILE_UPDATED)
                         throw new BadRequestException(
                                 "Received a request with id 0, but it is not a FileUpdatedCallback");
