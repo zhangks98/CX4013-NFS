@@ -3,7 +3,6 @@ package nfs.client;
 import nfs.common.Serializer;
 import nfs.common.requests.*;
 import nfs.common.responses.Response;
-import nfs.common.responses.ResponseBuilder;
 import nfs.common.responses.ResponseStatus;
 import nfs.common.values.Value;
 import org.apache.logging.log4j.LogManager;
@@ -186,7 +185,7 @@ public class Proxy {
                 byte[] buffer = new byte[Serializer.BUF_SIZE];
                 DatagramPacket res = new DatagramPacket(buffer, Serializer.BUF_SIZE);
                 socket.receive(res);
-                Response response = ResponseBuilder.parseFrom(buffer);
+                Response response = Response.Builder.parseFrom(buffer);
                 if (response.getReqId() != request.getId()) {
                     logger.error(String.format("Error invoking %s: Request id mismatch", request.getName()));
                     return Optional.empty();

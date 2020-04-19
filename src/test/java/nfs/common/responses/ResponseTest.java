@@ -20,7 +20,7 @@ public class ResponseTest {
         int reqId = 1;
         Response expected = new GenericResponse(reqId, ResponseStatus.NOT_FOUND);
         byte[] serialized = expected.toBytes();
-        Response actual = ResponseBuilder.parseFrom(serialized);
+        Response actual = Response.Builder.parseFrom(serialized);
         assertEquals(reqId, actual.getReqId());
         assertEquals(0, actual.getValues().size());
     }
@@ -32,7 +32,7 @@ public class ResponseTest {
         valueList.add(new Int32(Integer.MIN_VALUE));
         Response expected = new GenericResponse(0, ResponseStatus.OK, valueList);
         byte[] serialized = expected.toBytes();
-        Response actual = ResponseBuilder.parseFrom(serialized);
+        Response actual = Response.Builder.parseFrom(serialized);
         assertEquals(0, actual.getReqId());
         assertEquals(Long.MIN_VALUE, (long) valueList.get(0).getVal());
         assertEquals(Integer.MIN_VALUE, (int) valueList.get(1).getVal());
