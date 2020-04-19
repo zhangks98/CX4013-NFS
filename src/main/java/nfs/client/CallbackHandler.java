@@ -6,7 +6,6 @@ import nfs.common.requests.FileUpdatedCallback;
 import nfs.common.requests.Request;
 import nfs.common.requests.RequestName;
 import nfs.common.responses.Response;
-import nfs.common.responses.ResponseBuilder;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -51,7 +50,7 @@ public class CallbackHandler implements Runnable {
                     handle(callback);
                 } else {
                     // Else it is a response of a register request.
-                    Response res = ResponseBuilder.parseFrom(data);
+                    Response res = Response.Builder.parseFrom(data);
                     // Offer the response to the Proxy.
                     queue.offer(res);
                 }
