@@ -33,10 +33,10 @@ def main():
         '-m', '--mode', choices=['ALO', 'AMO'], required=True, help='Invocation semantic.')
     args = parser.parse_args()
 
-    UDP_IP = '0.0.0.0'
-    UDP_PORT = args.port
-    ROOT_DIR = args.path
-    MODE = args.mode
+    UDP_IP: str = '0.0.0.0'
+    UDP_PORT: str = args.port
+    ROOT_DIR: str = args.path
+    MODE: str = args.mode
 
     if not isdir(ROOT_DIR):
         raise OSError('Path {} is not a directory'.format(ROOT_DIR))
@@ -64,7 +64,7 @@ def main():
                 req = Request.from_bytes(data)
             except (ValueError, NotImplementedError) as e:
                 logger.exception("Unable to parse request")
-                res = Response(req.get_id(), ResponseStatus.BAD_REQUEST, [Str(str(e))])
+                res = Response(-1, ResponseStatus.BAD_REQUEST, [Str(str(e))])
                 sock.sendto(res.to_bytes(), addr)
                 continue
 
@@ -93,7 +93,7 @@ def main():
                 sock.sendto(res.to_bytes(), addr)
 
     except KeyboardInterrupt:
-        logger.info('Shuting down...')
+        logger.info('Shutting down...')
         sock.close()
 
 

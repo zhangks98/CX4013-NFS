@@ -171,7 +171,7 @@ class FileUpdatedCallback(Request):
     def get_path(self) -> str:
         return self.get_param(0).get_val()
     
-    def get_mtime(self) -> bytes:
+    def get_mtime(self) -> int:
         return self.get_param(1).get_val()
 
     def get_data(self) -> bytes:

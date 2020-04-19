@@ -1,5 +1,7 @@
 import logging
 import os
+import socket
+import time
 from pathlib import Path
 from typing import List, Optional
 
@@ -8,16 +10,61 @@ from nfs.common.requests import (EmptyRequest, FileUpdatedCallback,
                                  GetAttrRequest, ListDirRequest, ReadRequest,
                                  RegisterRequest, Request, RequestName,
                                  TouchRequest, WriteRequest)
-from nfs.common.responses import Response, ResponseStatus
-from nfs.common.values import Bytes, Int32, Int64, Str, Value
+from nfs.common.values import Bytes, Int64, Str, Value
 
 logger = logging.getLogger(__name__)
 
 
 class ALOServicer:
-    def __init__(self, root_dir, sock):
+    def __init__(self, root_dir: str, sock: socket.socket):
         self.root_dir = root_dir
         self.sock = sock
+        self.file_subscribers = {}  # file_path --> Dict<client_addr, { time_of_register, monitor_interval }>
+
+    def get_current_timestamp_second(self):
+        return int(time.time() * 1000)
+
+    def update_file_subscribers(self, file_path: str, client_addr: str, time_of_register: int, monitor_interval: int):
+        # Register the client with the path
+        if file_path not in self.file_subscribers:
+            self.file_subscribers[file_path] = {}
+        # If already registered, update register time and monitor interval
+        if client_addr in self.file_subscribers[file_path]:
+            self.file_subscribers[file_path][client_addr] = {
+                "time_of_register": time_of_register,  # Current timestamp
+                "monitor_interval": monitor_interval
+            }
+            return []
+        # If not present, register it
+        self.file_subscribers[file_path][client_addr] = {
+            "time_of_register": time_of_register,  # Current timestamp
+            "monitor_interval": monitor_interval
+        }
+
+    def validate_file_path(self, path: str, combined_path: str):
+        logger.debug("path: {}".format(path))
+        logger.debug("Combined path: {}".format(combined_path))
+        if not os.path.exists(combined_path):
+            raise NotFoundError(
+                'File {} does not exist on the server'.format(path))
+        if os.path.isdir(combined_path):
+            raise BadRequestError('{} is a directory'.format(path))
+
+    def send_update(self, path_to_file: str, mtime: int, data: bytes):
+        if path_to_file not in self.file_subscribers:
+            # No client subscribed to this file
+            return
+        subscriber_map: dict = self.file_subscribers[path_to_file]
+        for client_addr in subscriber_map.copy():
+            registry_info: dict = subscriber_map[client_addr]
+            if self.get_current_timestamp_second() > registry_info["time_of_register"] + registry_info[
+                "monitor_interval"]:
+                # Expired, remove it
+                del subscriber_map[client_addr]
+            else:
+                # Send update
+                callback_req = FileUpdatedCallback(path=path_to_file, mtime=mtime, data=data)
+                self.sock.sendto(callback_req.to_bytes(), client_addr)
 
     def handle(self, req, addr) -> List[Value]:
         req_name = req.get_name()
@@ -42,15 +89,8 @@ class ALOServicer:
 
     def handle_read(self, req: ReadRequest):
         path = req.get_path()
-        logger.debug("path: {}".format(path))
         combined_path = os.path.join(self.root_dir, path)
-        logger.debug("Combined path: {}".format(combined_path))
-        # Check whether file_path exists
-        if not os.path.exists(combined_path):
-            raise NotFoundError(
-                'File {} does not exist on the server'.format(path))
-        if os.path.isdir(combined_path):
-            raise BadRequestError('{} is a directory'.format(path))
+        self.validate_file_path(path, combined_path)
         with open(combined_path, 'rb') as f:
             content = f.read()
         return [Bytes(content)]
@@ -62,13 +102,7 @@ class ALOServicer:
         logger.debug(
             "Arguments - path: {}, offset: {}, data: {}".format(path, offset, data))
         combined_path = os.path.join(self.root_dir, path)
-        logger.debug("Combined path: {}".format(combined_path))
-        # If file does not exist on the server, returns error
-        if not os.path.exists(combined_path):
-            raise NotFoundError(
-                'File {} does not exist on the server'.format(path))
-        if os.path.isdir(combined_path):
-            raise BadRequestError('{} is a directory'.format(path))
+        self.validate_file_path(path, combined_path)
         # If offset exceeds the file length, returns error
         file_size = os.path.getsize(combined_path)
         if offset > file_size:
@@ -81,6 +115,11 @@ class ALOServicer:
             f.truncate()  # Remove the content after offset
             f.write(data)  # Append the data
             f.write(remaining_content)  # Append the remaining content
+            f.seek(0)
+            file_content = f.read()
+        # Update subscribers
+        mtime = int(os.path.getmtime(combined_path) * 1000)
+        self.send_update(path_to_file=combined_path, mtime=mtime, data=file_content)
         # Returns an acknowledgement to the client upon successful write
         return []
 
@@ -89,9 +128,7 @@ class ALOServicer:
         logger.debug("Arguments - path: {}".format(path))
         combined_path = os.path.join(self.root_dir, path)
         logger.debug("Combined path: {}".format(combined_path))
-        if not os.path.exists(combined_path):
-            raise NotFoundError(
-                'File {} does not exist on the server'.format(path))
+        self.validate_file_path(path, combined_path)
         atime = int(os.path.getatime(combined_path) * 1000)
         mtime = int(os.path.getmtime(combined_path) * 1000)
         return [Int64(mtime), Int64(atime)]
@@ -116,8 +153,15 @@ class ALOServicer:
         # Returns access time (timestamp) to the client upon successful touch
         return [Int64(atime)]
 
-    def handle_register(self, req: RegisterRequest, addr):
-        raise NotImplementedError
+    def handle_register(self, req: RegisterRequest, client_addr: str):
+        monitor_interval = req.get_monitor_interval()
+        path = req.get_path()
+        combined_path = os.path.join(self.root_dir, path)
+        self.validate_file_path(path, combined_path)
+        current_timestamp = self.get_current_timestamp_second()
+        self.update_file_subscribers(file_path=combined_path, client_addr=client_addr,
+                                     time_of_register=current_timestamp, monitor_interval=monitor_interval)
+        return []
 
 
 class AMOServicer(ALOServicer):
@@ -125,13 +169,11 @@ class AMOServicer(ALOServicer):
         super().__init__(root_dir, sock)
         self.historyMap = {}
 
-    # TODO(ming): use explicit type for addr
-    def _create_identifier(self, req: Request, addr: any) -> str:
+    def create_identifier(self, req: Request, addr: any) -> str:
         return str(req.get_id()) + ":" + str(addr)
 
-    # TODO(ming): use explicit type for addr
     def _is_duplicate_request(self, req: Request, addr: any) -> Optional[List[Value]]:
-        identifier = self._create_identifier(req, addr)
+        identifier = self.create_identifier(req, addr)
         if identifier not in self.historyMap:
             return None
         return self.historyMap[identifier]
@@ -142,7 +184,7 @@ class AMOServicer(ALOServicer):
             return stored_res
         # Call handle from parent class
         res = super().handle(req, addr)
-        identifier = self._create_identifier(req, addr)
+        identifier = self.create_identifier(req, addr)
         # Save it to history
         self.historyMap[identifier] = res
         return res

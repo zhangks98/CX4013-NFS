@@ -1,17 +1,22 @@
 from unittest import mock
 
 import pytest
+import os
 from pyfakefs.fake_filesystem import FakeFilesystem
 
 from nfs.common.requests import (EmptyRequest, GetAttrRequest, ReadRequest,
-                                 TouchRequest, WriteRequest)
+                                 TouchRequest, WriteRequest, RegisterRequest)
 from nfs.common.exceptions import BadRequestError
 from nfs.common.values import Bytes, Int32, Str
 from nfs.server.servicer import ALOServicer, AMOServicer
 
+addr = "localhost"
+port = 8080
 mock_socket = mock.Mock()
 mock_socket.recv.return_value = []
-addr = "localhost"
+mock_socket.getsockname.return_value = (addr, port)
+
+ROOT_DIR = "."
 
 
 def get_memory_addr(var):
@@ -81,6 +86,31 @@ class TestALOServier:
         req.add_param(Str("test"))  # Path
         with pytest.raises(BadRequestError):
             self.servicer.handle(req, addr)
+
+    def test_handle_register(self, fs: FakeFilesystem):
+        file_path = 'test.txt'
+        monitor_interval = 100
+        fs.create_file(file_path, contents='test')
+        req = RegisterRequest(0)
+        req.add_param(Int32(monitor_interval))  # monitor_interval
+        req.add_param(Str(file_path))  # Path
+        # Register
+        self.servicer.handle(req, addr)
+        client_addr = addr
+        combined_path = os.path.join(ROOT_DIR, file_path)
+        # Should be able to find the combined path in file_subscriber
+        assert combined_path in self.servicer.file_subscribers
+        # Should be able to find the client identifier in file_subscriber
+        assert client_addr in self.servicer.file_subscribers[combined_path]
+        # Should be able to find monitor_interval associated with that client
+        assert self.servicer.file_subscribers[combined_path][client_addr]["monitor_interval"] == monitor_interval
+        # Update register
+        monitor_interval = 200
+        req = RegisterRequest(0)
+        req.add_param(Int32(200))  # monitor_interval
+        req.add_param(Str(file_path))  # Path
+        self.servicer.handle(req, addr)
+        assert self.servicer.file_subscribers[combined_path][client_addr]["monitor_interval"] == monitor_interval
 
     def test_duplicate_request(self):
         req = EmptyRequest(0)
