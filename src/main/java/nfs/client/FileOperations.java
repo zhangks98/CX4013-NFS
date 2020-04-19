@@ -31,7 +31,7 @@ public class FileOperations {
 
         if (optFile.isPresent()) {
             byte[] file = optFile.get();
-            if (offset >= file.length) {
+            if (offset < 0 || offset >= file.length) {
                 logger.warn("Offset out of range");
             } else if (file.length - offset < count) {
                 slice = Arrays.copyOfRange(file, offset, file.length);
