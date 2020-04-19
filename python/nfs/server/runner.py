@@ -1,6 +1,7 @@
 import argparse
 import logging
 import socket
+import random
 from os.path import abspath, isdir
 
 from nfs.common.exceptions import BadRequestError, NotFoundError
@@ -14,6 +15,13 @@ logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s
                     level=logging.INFO)
 
 logger = logging.getLogger(__name__)
+
+
+def send_response(sock: socket.socket, addr: str, res: Response, loss_prob: int):
+    if random.random() < loss_prob:
+        logger.info('Response to request #{} is lost'.format(res.get_req_id()))
+        return
+    sock.sendto(res.to_bytes(), addr)
 
 
 def main():
@@ -31,12 +39,17 @@ def main():
         'path', type=str, help='Root directory for the server.')
     parser.add_argument(
         '-m', '--mode', choices=['ALO', 'AMO'], required=True, help='Invocation semantic.')
+    parser.add_argument(
+        '-l', '--loss-prob', default=0.0, type=float, help='Probability of a response loss; default is 0.0'
+    )
+
     args = parser.parse_args()
 
     UDP_IP: str = '0.0.0.0'
     UDP_PORT: str = args.port
     ROOT_DIR: str = args.path
     MODE: str = args.mode
+    LOSS_PROB: int = args.loss_prob
 
     if not isdir(ROOT_DIR):
         raise OSError('Path {} is not a directory'.format(ROOT_DIR))
@@ -55,6 +68,7 @@ def main():
 
     logger.info('Server running in %s mode', MODE)
     logger.info('Root directory: %s', abspath(ROOT_DIR))
+    logger.info('Loss probability: %s', LOSS_PROB)
 
     try:
         while True:
@@ -74,7 +88,7 @@ def main():
             try:
                 vals = servicer.handle(req, addr)
                 res = Response(req.get_id(), ResponseStatus.OK, vals)
-                sock.sendto(res.to_bytes(), addr)
+                send_response(sock, addr, res, LOSS_PROB)
             except BadRequestError as e:
                 logger.warning('Bad request for %s: %s',
                                req.get_name().name, e)
