@@ -3,11 +3,12 @@ package nfs.common.requests;
 public enum RequestName {
     EMPTY(0, EmptyRequest::new),
     READ(1, ReadRequest::new),
-    WRITE(3, WriteRequest::new),
+    INSERT(3, InsertRequest::new),
     GET_ATTR(1, GetAttrRequest::new),
     LIST_DIR(1, ListDirRequest::new),
     TOUCH(1, TouchRequest::new),
     REGISTER(2, RegisterRequest::new),
+    APPEND(2, AppendRequest::new),
     FILE_UPDATED(3, FileUpdatedCallback::new);
 
     private final int numParams;

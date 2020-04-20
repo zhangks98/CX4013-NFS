@@ -57,7 +57,7 @@ public class CacheHandler {
                 return Optional.empty();
             } else {
                 long tMserver = optAttr.get()[0];
-
+                long now = System.currentTimeMillis();
                 // invalid entry
                 if (entry.getTmclient() < tMserver) {
                     logger.info("Invalid cached copy of " + filePath +
@@ -67,7 +67,6 @@ public class CacheHandler {
                     // file still on server
                     if (optFile.isPresent()) {
                         byte[] fileContent = optFile.get();
-                        long now = System.currentTimeMillis();
                         cache.putFile(filePath, fileContent, tMserver, now);
                         logger.info("Updated the cached copy of " + filePath);
                     } else {
@@ -81,6 +80,11 @@ public class CacheHandler {
                     cache.removeFile(filePath);
                     logger.warn(filePath + " removed from cache due to invalid file attribute.");
                     return Optional.empty();
+                } else {
+                    // File has not been modified on server. Set Tc to be now.
+                    logger.info("File has not been modified on server. Updating Tc...");
+                    entry.setTc(now);
+                    cache.putEntry(filePath, entry);
                 }
             }
         }
@@ -103,7 +107,7 @@ public class CacheHandler {
     }
 
     /**
-     * Send a write request to the server
+     * Send an insert request to the server
      * Remove the file from cache (if cached) to maintain cache consistency
      *
      * @param filePath file path on the server
@@ -111,10 +115,24 @@ public class CacheHandler {
      * @param data     data in bytes
      * @throws IOException
      */
-    public void writeFile(String filePath, int offset, byte[] data) throws IOException {
+    public void insertFile(String filePath, int offset, byte[] data) throws IOException {
         if (cache.exists(filePath))
             cache.removeFile(filePath);
-        stub.write(filePath, offset, data);
+        stub.insert(filePath, offset, data);
+    }
+
+    /**
+     * Send an append request to the server
+     * Remove the file from cache (if cached) to maintain cache consistency
+     *
+     * @param filePath file path on the server
+     * @param data     data in bytes
+     * @throws IOException
+     */
+    public void appendFile(String filePath, byte[] data) throws IOException {
+        if (cache.exists(filePath))
+            cache.removeFile(filePath);
+        stub.append(filePath, data);
     }
 
     public Cache getCache() {

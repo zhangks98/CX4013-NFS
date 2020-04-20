@@ -54,15 +54,27 @@ public class Proxy {
     }
 
     /**
-     * Send a write request to the server
+     * Send an insert request to the server
      * print the number of bytes written
      *
      * @param filePath file path on server
      * @param offset   offset of content insertion, measured in number of bytes
      * @param data     bytes to write
      */
-    public void write(String filePath, int offset, byte[] data) throws IOException {
-        invoke(new WriteRequest(filePath, offset, data))
+    public void insert(String filePath, int offset, byte[] data) throws IOException {
+        invoke(new InsertRequest(filePath, offset, data))
+                .ifPresent(res -> System.out.println("Success"));
+    }
+
+    /**
+     * Send an append request to the server
+     * print the number of bytes written
+     *
+     * @param filePath file path on server
+     * @param data     bytes to write
+     */
+    public void append(String filePath, byte[] data) throws IOException {
+        invoke(new AppendRequest(filePath, data))
                 .ifPresent(res -> System.out.println("Success"));
     }
 

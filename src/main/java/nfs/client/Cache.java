@@ -42,6 +42,18 @@ public class Cache {
     }
 
     /**
+     * Put a cache entry to the cached files
+     * If the map previously contained a mapping for the filePath,
+     * the old value is replaced.
+     *
+     * @param filePath file path on server
+     * @param entry    the cache entry
+     */
+    public void putEntry(String filePath, CacheEntry entry) {
+        cachedFiles.put(filePath, entry);
+    }
+
+    /**
      * Remove a cached file
      *
      * @param filePath file path on server

@@ -47,6 +47,30 @@ public class FileOperations {
     }
 
     /**
+     * Starting from the given offset, read all bytes from a file,
+     *
+     * @param filePath file path on server
+     * @param offset   offset in bytes
+     * @return an Optional object of bytes
+     */
+    public Optional<byte[]> read(String filePath, int offset) throws IOException {
+        filePath = Paths.get(filePath).normalize().toString();
+        Optional<byte[]> optFile = cacheHandler.getFile(filePath);
+        byte[] slice = null;
+
+        if (optFile.isPresent()) {
+            byte[] file = optFile.get();
+            if (offset < 0 || offset >= file.length) {
+                logger.warn("Offset out of range");
+            } else {
+                slice = Arrays.copyOfRange(file, offset, file.length);
+                System.out.println(new String(slice, StandardCharsets.UTF_8));
+            }
+        }
+        return Optional.ofNullable(slice);
+    }
+
+    /**
      * Write to a file by inserting data at the offset
      *
      * @param filePath file path on hte server
@@ -54,9 +78,22 @@ public class FileOperations {
      * @param data     data in bytes
      * @throws IOException
      */
-    public void write(String filePath, int offset, byte[] data) throws IOException {
+    public void insert(String filePath, int offset, byte[] data) throws IOException {
         filePath = Paths.get(filePath).normalize().toString();
-        cacheHandler.writeFile(filePath, offset, data);
+        cacheHandler.insertFile(filePath, offset, data);
     }
+
+    /**
+     * Write to a file by appending data at the end
+     *
+     * @param filePath file path on hte server
+     * @param data     data in bytes
+     * @throws IOException
+     */
+    public void append(String filePath, byte[] data) throws IOException {
+        filePath = Paths.get(filePath).normalize().toString();
+        cacheHandler.appendFile(filePath, data);
+    }
+
 
 }

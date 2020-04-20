@@ -1,7 +1,7 @@
 import argparse
 import logging
-import socket
 import random
+import socket
 from os.path import abspath, isdir
 
 from nfs.common.exceptions import BadRequestError, NotFoundError

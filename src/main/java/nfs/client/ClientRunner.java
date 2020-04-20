@@ -23,8 +23,9 @@ public class ClientRunner implements Callable<Integer> {
             + "The following commands are available:     \n"
             + "<> - required arguments\n"
             + "[] - optional arguments\n\n"
-            + "| read <file path> <offset> <count>                  |\n"
-            + "| write <file path> <offset> <data>                  |\n"
+            + "| read <file path> [offset] [count]                  |\n"
+            + "| insert <file path> <offset> <data>                 |\n"
+            + "| append <file path> <data>                          |\n"
             + "| register <file path> <monitor interval (ms)>       |\n"
             + "| touch <new file path>                              |\n"
             + "| ls [dir]                                           |\n"
@@ -36,7 +37,7 @@ public class ClientRunner implements Callable<Integer> {
     private InetAddress address;
     @Parameters(index = "1", description = "The port of the file server.")
     private int port;
-    @Option(names = {"-f", "--fresh-interval"}, defaultValue = "30000",
+    @Option(names = {"-f", "--fresh-interval"}, defaultValue = "15000",
             description = "Freshness interval (in ms) of the client cache. Default value: ${DEFAULT-VALUE}")
     private long freshInterval;
     @Option(names = {"-l", "--loss-prob"}, defaultValue = "0",
@@ -95,12 +96,20 @@ public class ClientRunner implements Callable<Integer> {
         try {
             switch (command[0]) {
                 case "read":
-                    if (validateLength(command, 4) && containsNum(command[2]) && containsNum(command[3]))
+                    if (command.length == 2)
+                        fileOp.read(command[1], 0);
+                    else if (command.length == 3 && containsNum(command[2]))
+                        fileOp.read(command[1], Integer.parseInt(command[2]));
+                    else if (validateLength(command, 4) && containsNum(command[2]) && containsNum(command[3]))
                         fileOp.read(command[1], Integer.parseInt(command[2]), Integer.parseInt(command[3]));
                     break;
-                case "write":
+                case "insert":
                     if (validateLength(command, 4) && containsNum(command[2]))
-                        fileOp.write(command[1], Integer.parseInt(command[2]), command[3].getBytes());
+                        fileOp.insert(command[1], Integer.parseInt(command[2]), command[3].getBytes());
+                    break;
+                case "append":
+                    if (validateLength(command, 3))
+                        fileOp.append(command[1], command[2].getBytes());
                     break;
                 case "touch":
                     if (validateLength(command, 2))
