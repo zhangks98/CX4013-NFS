@@ -5,7 +5,7 @@ import pytest
 from nfs.common.requests import (EmptyRequest, FileUpdatedCallback,
                                  GetAttrRequest, ListDirRequest, ReadRequest,
                                  RegisterRequest, Request, RequestName,
-                                 TouchRequest, WriteRequest)
+                                 TouchRequest, InsertRequest)
 from nfs.common.serialize import ByteBuffer
 from nfs.common.values import Bytes, Int32, Str, Value
 
@@ -80,18 +80,18 @@ def test_unmarshal_ReadRequest():
     assert actual.get_path() == path
 
 
-def test_unmarshal_WriteRequest():
+def test_unmarshal_InsertRequest():
     req_id = 4
     offset = 5
     path = 'abc.txt'
     data = bytes([0xd, 0xe, 0xf])
-    expected = WriteRequest(req_id)
+    expected = InsertRequest(req_id)
     expected.add_param(Int32(offset))
     expected.add_param(Str(path))
     expected.add_param(Bytes(data))
     actual = Request.from_bytes(expected.to_bytes())
     assert actual.get_id() == req_id
-    assert actual.get_name() == RequestName.WRITE
+    assert actual.get_name() == RequestName.INSERT
     assert actual.get_path() == path
     assert actual.get_offset() == offset
     assert actual.get_data() == data

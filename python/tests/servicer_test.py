@@ -5,7 +5,7 @@ import os
 from pyfakefs.fake_filesystem import FakeFilesystem
 
 from nfs.common.requests import (EmptyRequest, GetAttrRequest, ReadRequest,
-                                 TouchRequest, WriteRequest, RegisterRequest)
+                                 TouchRequest, InsertRequest, RegisterRequest)
 from nfs.common.exceptions import BadRequestError
 from nfs.common.values import Bytes, Int32, Str
 from nfs.server.servicer import ALOServicer, AMOServicer
@@ -51,9 +51,9 @@ class TestALOServier:
         atime_new = fs.stat('test.txt').st_atime
         assert atime_new != atime_old
 
-    def test_handle_write(self, fs: FakeFilesystem):
+    def test_handle_insert(self, fs: FakeFilesystem):
         fs.create_file('test.txt', contents='test')
-        req = WriteRequest(0)
+        req = InsertRequest(0)
         req.add_param(Int32(2))  # Offset
         req.add_param(Str('test.txt'))  # Path
         req.add_param(Bytes(b'INSERT'))
@@ -64,9 +64,9 @@ class TestALOServier:
         fs.create_dir('text.txt')
         self.servicer.handle(req, addr)
 
-    def test_handle_write_dir(self, fs: FakeFilesystem):
+    def test_handle_insert_dir(self, fs: FakeFilesystem):
         fs.create_dir('dir')
-        req = WriteRequest(0)
+        req = InsertRequest(0)
         req.add_param(Int32(2))  # Offset
         req.add_param(Str('dir'))  # Path
         req.add_param(Bytes(b'INSERT'))

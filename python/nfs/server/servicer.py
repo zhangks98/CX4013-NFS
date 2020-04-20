@@ -9,7 +9,7 @@ from nfs.common.exceptions import BadRequestError, NotFoundError
 from nfs.common.requests import (EmptyRequest, FileUpdatedCallback,
                                  GetAttrRequest, ListDirRequest, ReadRequest,
                                  RegisterRequest, Request, RequestName,
-                                 TouchRequest, WriteRequest)
+                                 TouchRequest, InsertRequest)
 from nfs.common.values import Bytes, Int64, Str, Value
 
 logger = logging.getLogger(__name__)
@@ -74,8 +74,8 @@ class ALOServicer:
             return self.handle_empty(req)
         if req_name == RequestName.READ:
             return self.handle_read(req)
-        if req_name == RequestName.WRITE:
-            return self.handle_write(req)
+        if req_name == RequestName.INSERT:
+            return self.handle_insert(req)
         if req_name == RequestName.GET_ATTR:
             return self.handle_get_attr(req)
         if req_name == RequestName.LIST_DIR:
@@ -97,7 +97,7 @@ class ALOServicer:
             content = f.read()
         return [Bytes(content)]
 
-    def handle_write(self, req: WriteRequest):
+    def handle_insert(self, req: InsertRequest):
         path = req.get_path()
         offset = req.get_offset()
         data = req.get_data()

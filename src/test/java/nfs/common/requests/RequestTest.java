@@ -65,15 +65,15 @@ public class RequestTest {
     }
 
     @Test
-    public void marshallWriteRequest() throws InvalidClassException, InvalidObjectException {
+    public void marshallInsertRequest() throws InvalidClassException, InvalidObjectException {
         String path = "abc.txt";
         int offset = 1;
         byte[] data = new byte[]{0xd, 0xe, 0xf};
-        WriteRequest expected = new WriteRequest(path, offset, data);
+        InsertRequest expected = new InsertRequest(path, offset, data);
         byte[] serialized = expected.toBytes();
-        WriteRequest actual = (WriteRequest) Request.Builder.parseFrom(serialized);
+        InsertRequest actual = (InsertRequest) Request.Builder.parseFrom(serialized);
         assertEquals(expected.getId(), actual.getId());
-        assertEquals(RequestName.WRITE, actual.getName());
+        assertEquals(RequestName.INSERT, actual.getName());
         assertEquals(path, actual.getPath());
         assertEquals(offset, actual.getOffset());
         assertArrayEquals(data, actual.getData());

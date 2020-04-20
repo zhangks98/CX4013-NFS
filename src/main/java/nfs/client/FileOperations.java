@@ -54,9 +54,9 @@ public class FileOperations {
      * @param data     data in bytes
      * @throws IOException
      */
-    public void write(String filePath, int offset, byte[] data) throws IOException {
+    public void insert(String filePath, int offset, byte[] data) throws IOException {
         filePath = Paths.get(filePath).normalize().toString();
-        cacheHandler.writeFile(filePath, offset, data);
+        cacheHandler.insertFile(filePath, offset, data);
     }
 
 }

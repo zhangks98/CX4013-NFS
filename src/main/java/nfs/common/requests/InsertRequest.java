@@ -4,9 +4,9 @@ import nfs.common.values.Bytes;
 import nfs.common.values.Int32;
 import nfs.common.values.Str;
 
-public class WriteRequest extends AbstractRequest {
-    public WriteRequest(RequestId id) {
-        super(id, RequestName.WRITE);
+public class InsertRequest extends AbstractRequest {
+    public InsertRequest(RequestId id) {
+        super(id, RequestName.INSERT);
     }
 
     /**
@@ -16,8 +16,8 @@ public class WriteRequest extends AbstractRequest {
      * @param offset the starting point to write data.
      * @param data   the data to write.
      */
-    public WriteRequest(String path, int offset, byte[] data) {
-        super(RequestName.WRITE);
+    public InsertRequest(String path, int offset, byte[] data) {
+        super(RequestName.INSERT);
         addParam(new Int32(offset));
         addParam(new Str(path));
         addParam(new Bytes(data));

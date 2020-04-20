@@ -24,7 +24,7 @@ public class ClientRunner implements Callable<Integer> {
             + "<> - required arguments\n"
             + "[] - optional arguments\n\n"
             + "| read <file path> <offset> <count>                  |\n"
-            + "| write <file path> <offset> <data>                  |\n"
+            + "| insert <file path> <offset> <data>                  |\n"
             + "| register <file path> <monitor interval (ms)>       |\n"
             + "| touch <new file path>                              |\n"
             + "| ls [dir]                                           |\n"
@@ -98,9 +98,9 @@ public class ClientRunner implements Callable<Integer> {
                     if (validateLength(command, 4) && containsNum(command[2]) && containsNum(command[3]))
                         fileOp.read(command[1], Integer.parseInt(command[2]), Integer.parseInt(command[3]));
                     break;
-                case "write":
+                case "insert":
                     if (validateLength(command, 4) && containsNum(command[2]))
-                        fileOp.write(command[1], Integer.parseInt(command[2]), command[3].getBytes());
+                        fileOp.insert(command[1], Integer.parseInt(command[2]), command[3].getBytes());
                     break;
                 case "touch":
                     if (validateLength(command, 2))

@@ -61,8 +61,8 @@ public class Proxy {
      * @param offset   offset of content insertion, measured in number of bytes
      * @param data     bytes to write
      */
-    public void write(String filePath, int offset, byte[] data) throws IOException {
-        invoke(new WriteRequest(filePath, offset, data))
+    public void insert(String filePath, int offset, byte[] data) throws IOException {
+        invoke(new InsertRequest(filePath, offset, data))
                 .ifPresent(res -> System.out.println("Success"));
     }
 

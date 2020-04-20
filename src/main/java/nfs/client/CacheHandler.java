@@ -103,7 +103,7 @@ public class CacheHandler {
     }
 
     /**
-     * Send a write request to the server
+     * Send a insert request to the server
      * Remove the file from cache (if cached) to maintain cache consistency
      *
      * @param filePath file path on the server
@@ -111,10 +111,10 @@ public class CacheHandler {
      * @param data     data in bytes
      * @throws IOException
      */
-    public void writeFile(String filePath, int offset, byte[] data) throws IOException {
+    public void insertFile(String filePath, int offset, byte[] data) throws IOException {
         if (cache.exists(filePath))
             cache.removeFile(filePath);
-        stub.write(filePath, offset, data);
+        stub.insert(filePath, offset, data);
     }
 
     public Cache getCache() {

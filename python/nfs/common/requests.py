@@ -25,7 +25,7 @@ class RequestName(bytes, Enum):
     # Pass the constructor as an anonymous function to avoid circular dependency.
     EMPTY = (0, 0, lambda id: EmptyRequest(id))
     READ = (1, 1, lambda id: ReadRequest(id))
-    WRITE = (2, 3, lambda id: WriteRequest(id))
+    INSERT = (2, 3, lambda id: InsertRequest(id))
     GET_ATTR = (3, 1, lambda id: GetAttrRequest(id))
     LIST_DIR = (4, 1, lambda id: ListDirRequest(id))
     TOUCH = (5, 1, lambda id: TouchRequest(id))
@@ -109,9 +109,9 @@ class ReadRequest(Request):
         return self.get_param(0).get_val()
 
 
-class WriteRequest(Request):
+class InsertRequest(Request):
     def __init__(self, id: int):
-        super().__init__(id, RequestName.WRITE)
+        super().__init__(id, RequestName.INSERT)
 
     def get_path(self) -> str:
         return self.get_param(1).get_val()
