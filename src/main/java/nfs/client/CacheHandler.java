@@ -57,7 +57,6 @@ public class CacheHandler {
                 return Optional.empty();
             } else {
                 long tMserver = optAttr.get()[0];
-                long now = System.currentTimeMillis();
                 // invalid entry
                 if (entry.getTmclient() < tMserver) {
                     logger.info("Invalid cached copy of " + filePath +
@@ -67,6 +66,7 @@ public class CacheHandler {
                     // file still on server
                     if (optFile.isPresent()) {
                         byte[] fileContent = optFile.get();
+                        long now = System.currentTimeMillis();
                         cache.putFile(filePath, fileContent, tMserver, now);
                         logger.info("Updated the cached copy of " + filePath);
                     } else {
@@ -83,6 +83,7 @@ public class CacheHandler {
                 } else {
                     // File has not been modified on server. Set Tc to be now.
                     logger.info("File has not been modified on server. Updating Tc...");
+                    long now = System.currentTimeMillis();
                     entry.setTc(now);
                     cache.putEntry(filePath, entry);
                 }
