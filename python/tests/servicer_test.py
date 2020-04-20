@@ -1,12 +1,13 @@
+import os
 from unittest import mock
 
 import pytest
-import os
 from pyfakefs.fake_filesystem import FakeFilesystem
 
-from nfs.common.requests import (EmptyRequest, GetAttrRequest, ReadRequest,
-                                 TouchRequest, InsertRequest, RegisterRequest)
 from nfs.common.exceptions import BadRequestError
+from nfs.common.requests import (AppendRequest, EmptyRequest, GetAttrRequest,
+                                 InsertRequest, ReadRequest, RegisterRequest,
+                                 TouchRequest)
 from nfs.common.values import Bytes, Int32, Str
 from nfs.server.servicer import ALOServicer, AMOServicer
 
@@ -32,7 +33,7 @@ class TestALOServier:
 
     def test_handle_get_attr(self, fs: FakeFilesystem):
         fs.create_file('test.txt', contents='test')
-        req = GetAttrRequest(0)
+        req = GetAttrRequest(1)
         req.add_param(Str('test.txt'))  # Path
         val = self.servicer.handle(req, addr)
         mtime = val[0].get_val()
@@ -41,7 +42,7 @@ class TestALOServier:
         assert atime == int(fs.stat('test.txt').st_atime * 1000)
 
     def test_handle_touch(self, fs: FakeFilesystem):
-        req = TouchRequest(0)
+        req = TouchRequest(1)
         assert fs.exists('test.txt') is False
         req.add_param(Str('test.txt'))  # Path
         self.servicer.handle(req, addr)
@@ -53,7 +54,7 @@ class TestALOServier:
 
     def test_handle_insert(self, fs: FakeFilesystem):
         fs.create_file('test.txt', contents='test')
-        req = InsertRequest(0)
+        req = InsertRequest(1)
         req.add_param(Int32(2))  # Offset
         req.add_param(Str('test.txt'))  # Path
         req.add_param(Bytes(b'INSERT'))
@@ -66,23 +67,33 @@ class TestALOServier:
 
     def test_handle_insert_dir(self, fs: FakeFilesystem):
         fs.create_dir('dir')
-        req = InsertRequest(0)
+        req = InsertRequest(1)
         req.add_param(Int32(2))  # Offset
         req.add_param(Str('dir'))  # Path
         req.add_param(Bytes(b'INSERT'))
         with pytest.raises(BadRequestError):
             self.servicer.handle(req, addr)
 
+    def test_handle_append(self, fs: FakeFilesystem):
+        fs.create_file('test.txt', contents='test')
+        req = AppendRequest(1)
+        req.add_param(Str('test.txt'))  # Path
+        req.add_param(Bytes(b'APPEND'))
+        self.servicer.handle(req, addr)
+        with open('test.txt', 'rb') as f:
+            content = f.read()
+            assert content == b'testAPPEND'
+
     def test_handle_read(self, fs: FakeFilesystem):
         fs.create_file('test.txt', contents='test')
-        req = ReadRequest(0)
+        req = ReadRequest(1)
         req.add_param(Str("test.txt"))  # Path
         val = self.servicer.handle(req, addr)
         assert val[0].get_val() == b'test'
 
     def test_handle_read_dir(self, fs: FakeFilesystem):
         fs.create_dir('test')
-        req = ReadRequest(0)
+        req = ReadRequest(1)
         req.add_param(Str("test"))  # Path
         with pytest.raises(BadRequestError):
             self.servicer.handle(req, addr)
@@ -91,7 +102,7 @@ class TestALOServier:
         file_path = 'test.txt'
         monitor_interval = 100
         fs.create_file(file_path, contents='test')
-        req = RegisterRequest(0)
+        req = RegisterRequest(1)
         req.add_param(Int32(monitor_interval))  # monitor_interval
         req.add_param(Str(file_path))  # Path
         # Register
@@ -105,14 +116,14 @@ class TestALOServier:
         assert self.servicer.file_subscribers[file_path][client_addr]["monitor_interval"] == monitor_interval
         # Update register
         monitor_interval = 200
-        req = RegisterRequest(0)
+        req = RegisterRequest(1)
         req.add_param(Int32(200))  # monitor_interval
         req.add_param(Str(file_path))  # Path
         self.servicer.handle(req, addr)
         assert self.servicer.file_subscribers[file_path][client_addr]["monitor_interval"] == monitor_interval
 
     def test_duplicate_request(self):
-        req = EmptyRequest(0)
+        req = EmptyRequest(1)
         val_a = self.servicer.handle(req, addr)
         val_b = self.servicer.handle(req, addr)
         assert get_memory_addr(val_a) != get_memory_addr(val_b)
@@ -123,7 +134,7 @@ class TestAMOServicer:
         self.servicer = AMOServicer(".", mock_socket)
 
     def test_duplicate_request(self):
-        req = EmptyRequest(0)
+        req = EmptyRequest(1)
         assert self.servicer._is_duplicate_request(req, addr) is None
         val_a = self.servicer.handle(req, addr)
         assert self.servicer._is_duplicate_request(req, addr) is not None

@@ -17,7 +17,7 @@ class Value:
     @staticmethod
     def from_bytes(buffer: ByteBuffer) -> 'Value':
         value_type = buffer.get()
-        if value_type < 0 or value_type >= 4:
+        if value_type < 0 or value_type >= len(ValueType):
             raise ValueError("No such value type: {}".format(value_type))
         return ValueType(value_type).val_cls.from_bytes(buffer)
 

@@ -6,10 +6,11 @@ from pathlib import Path
 from typing import List, Optional
 
 from nfs.common.exceptions import BadRequestError, NotFoundError
-from nfs.common.requests import (EmptyRequest, FileUpdatedCallback,
-                                 GetAttrRequest, ListDirRequest, ReadRequest,
+from nfs.common.requests import (AppendRequest, EmptyRequest,
+                                 FileUpdatedCallback, GetAttrRequest,
+                                 InsertRequest, ListDirRequest, ReadRequest,
                                  RegisterRequest, Request, RequestName,
-                                 TouchRequest, InsertRequest)
+                                 TouchRequest)
 from nfs.common.values import Bytes, Int64, Str, Value
 
 logger = logging.getLogger(__name__)
@@ -43,6 +44,9 @@ class ALOServicer:
         }
 
     def validate_file_path(self, path: str, combined_path: str):
+        """
+        Verify that the file exists and is not a directory.
+        """
         logger.debug("path: {}".format(path))
         logger.debug("Combined path: {}".format(combined_path))
         if not os.path.exists(combined_path):
@@ -84,6 +88,8 @@ class ALOServicer:
             return self.handle_touch(req)
         if req_name == RequestName.REGISTER:
             return self.handle_register(req, addr)
+        if req_name == RequestName.APPEND:
+            return self.handle_append(req)
         raise BadRequestError('Request name not found.')
 
     def handle_empty(self, req: EmptyRequest):
@@ -124,6 +130,23 @@ class ALOServicer:
         self.send_update(path_to_file=path,
                          mtime=mtime, data=file_content)
         # Returns an acknowledgement to the client upon successful write
+        return []
+
+    def handle_append(self, req: AppendRequest):
+        path = req.get_path()
+        data = req.get_data()
+        logger.debug(
+            "Arguments - path: {}, data: {}".format(path, data))
+        combined_path = os.path.join(self.root_dir, path)
+        self.validate_file_path(path, combined_path)
+        with open(combined_path, "ab+") as f:
+            f.write(data)  # Append the data
+            f.seek(0)
+            file_content = f.read()
+        # Update subscribers
+        mtime = int(os.path.getmtime(combined_path) * 1000)
+        self.send_update(path_to_file=path,
+                         mtime=mtime, data=file_content)
         return []
 
     def handle_get_attr(self, req: GetAttrRequest):

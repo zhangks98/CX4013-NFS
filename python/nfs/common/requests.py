@@ -30,9 +30,10 @@ class RequestName(bytes, Enum):
     LIST_DIR = (4, 1, lambda id: ListDirRequest(id))
     TOUCH = (5, 1, lambda id: TouchRequest(id))
     REGISTER = (6, 2, lambda id: RegisterRequest(id))
+    APPEND = (7, 2, lambda id: AppendRequest(id))
 
     # FileUpdatedCallback does not construct from parser.
-    FILE_UPDATED = (7, 3, None)
+    FILE_UPDATED = (8, 3, None)
 
 
 class Request():
@@ -80,9 +81,9 @@ class Request():
     def from_bytes(data: bytes) -> 'Request':
         buf = ByteBuffer.wrap(data)
         req_id, req_name_ind, num_params = buf.get_request_header()
-        if req_name_ind < 0 or req_name_ind >= 8:
+        if req_name_ind < 0 or req_name_ind >= len(RequestName):
             raise ValueError("Unable to parse request: unknown request name")
-        if req_name_ind == 7:
+        if req_name_ind == 8:
             raise NotImplementedError(
                 "Server does not handle FileUpdatedCallback.")
         req = RequestName(req_name_ind).req_cls(req_id)
@@ -121,6 +122,17 @@ class InsertRequest(Request):
 
     def get_data(self) -> bytes:
         return self.get_param(2).get_val()
+
+
+class AppendRequest(Request):
+    def __init__(self, id: int):
+        super().__init__(id, RequestName.APPEND)
+
+    def get_path(self) -> str:
+        return self.get_param(0).get_val()
+
+    def get_data(self) -> bytes:
+        return self.get_param(1).get_val()
 
 
 class GetAttrRequest(Request):

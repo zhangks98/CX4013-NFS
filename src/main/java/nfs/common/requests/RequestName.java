@@ -8,6 +8,7 @@ public enum RequestName {
     LIST_DIR(1, ListDirRequest::new),
     TOUCH(1, TouchRequest::new),
     REGISTER(2, RegisterRequest::new),
+    APPEND(2, AppendRequest::new),
     FILE_UPDATED(3, FileUpdatedCallback::new);
 
     private final int numParams;

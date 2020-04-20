@@ -80,6 +80,19 @@ public class RequestTest {
     }
 
     @Test
+    public void marshallAppendRequest() throws InvalidClassException, InvalidObjectException {
+        String path = "abc.txt";
+        byte[] data = new byte[]{0xd, 0xe, 0xf};
+        AppendRequest expected = new AppendRequest(path, data);
+        byte[] serialized = expected.toBytes();
+        AppendRequest actual = (AppendRequest) Request.Builder.parseFrom(serialized);
+        assertEquals(expected.getId(), actual.getId());
+        assertEquals(RequestName.APPEND, actual.getName());
+        assertEquals(path, actual.getPath());
+        assertArrayEquals(data, actual.getData());
+    }
+
+    @Test
     public void marshallListDirRequest() throws InvalidClassException, InvalidObjectException {
         String path = "/src/test";
         ListDirRequest expected = new ListDirRequest(path);
