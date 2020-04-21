@@ -28,7 +28,7 @@ public class Proxy {
     private final DatagramSocket socket;
     private final DatagramSocket callbackSocket;
     private final BlockingQueue<Response> queue;
-    private final int timeout = 1000; // in milliseconds
+    private final int timeout = 5000; // in milliseconds
     private final int maxRecvAttempts = 5;
     private final double lossProb;
 
