@@ -32,6 +32,8 @@ public class FileOperations {
 
         if (optFile.isPresent()) {
             byte[] file = optFile.get();
+            if (file.length == 0)
+                return Optional.empty();
             if (offset < 0 || offset >= file.length) {
                 logger.warn("Offset out of range");
             } else if (file.length - offset < count) {
@@ -60,6 +62,8 @@ public class FileOperations {
 
         if (optFile.isPresent()) {
             byte[] file = optFile.get();
+            if (file.length == 0)
+                return Optional.empty();
             if (offset < 0 || offset >= file.length) {
                 logger.warn("Offset out of range");
             } else {
