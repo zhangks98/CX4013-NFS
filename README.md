@@ -17,8 +17,8 @@ Course Project for CX4013 Distributed Systems at Nanyang Technological Universit
 
 - To run the client:
   - Change to the directory: `cd nfs-client-1.0`
-  - On Linux/macOS: `bin/nfs-client [-hV] <address> <port>`
-  - On Windows: `bin\nfs-client.bat [-hV] <address> <port>`
+  - On Linux/macOS: `bin/nfs-client [-hV] [-f=<freshInterval>] [-l=<lossProb>] <address> <port>`
+  - On Windows: `bin\nfs-client.bat [-hV] [-f=<freshInterval>] [-l=<lossProb>] <address> <port>`
 
 ## Commands for Client
 ```
@@ -40,19 +40,17 @@ The following commands are available:
 ## How to build and run the Python Server
 - Go to the "python" directory: `cd python`
 
-- Create a Python (>=3.6) [virtual environment](https://virtualenv.pypa.io/en/latest):
-
-`virtualenv -p python3 ./venv`
+- Create a Python (>=3.6) [virtual environment](https://virtualenv.pypa.io/en/latest): `virtualenv -p python3 ./venv`
 
 - Activate the virtual environment:
   - On Linux/macOS: `source ./venv/bin/activate`
   - On Windows: `.\venv\Scripts\activate`
   
 - Install the package
-  - For production: `pip install .`
+  - For production: `pip install -U .`
   - For development: `pip install -e ".[dev,test]"`
 
-- To run the server: `nfs-server [-h] -m {ALO,AMO} port path`
+- To run the server: `nfs-server [-h] -m {ALO,AMO} [-l LOSS_PROB] port path`
 
 ## Commands for Server
 
