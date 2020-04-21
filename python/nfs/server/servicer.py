@@ -70,7 +70,10 @@ class ALOServicer:
                 # Send update
                 callback_req = FileUpdatedCallback(
                     path=path_to_file, mtime=mtime, data=data)
-                self.sock.sendto(callback_req.to_bytes(), client_addr)
+                try:
+                    self.sock.sendto(callback_req.to_bytes(), client_addr)
+                except OSError as e:
+                    logger.warning("Error sending callback to %s: %s", client_addr, e)
 
     def handle(self, req, addr) -> List[Value]:
         req_name = req.get_name()
