@@ -6,7 +6,7 @@ Course Project for CX4013 Distributed Systems at Nanyang Technological Universit
 
 ## Prerequisites
 - Java >= 11
-- Python >= 3.7
+- Python >= 3.6
 
 ## How to build and run the Java Client
 - Assemble the executable
@@ -20,10 +20,26 @@ Course Project for CX4013 Distributed Systems at Nanyang Technological Universit
   - On Linux/macOS: `bin/nfs-client [-hV] <address> <port>`
   - On Windows: `bin\nfs-client.bat [-hV] <address> <port>`
 
+## Commands for Client
+```The following commands are available:     
+<> - required arguments
+[] - optional arguments
+
+| read <file path> [offset] [count]                  |
+| insert <file path> <offset> <data>                 |
+| append <file path> <data>                          |
+| register <file path> <monitor interval (ms)>       |
+| touch <new file path>                              |
+| ls [dir]                                           |
+| help                                               |
+| exit                                               |
+```
+
+
 ## How to build and run the Python Server
 - Go to the "python" directory: `cd python`
 
-- Create a Python (>=3.7) [virtual environment](https://virtualenv.pypa.io/en/latest):
+- Create a Python (>=3.6) [virtual environment](https://virtualenv.pypa.io/en/latest):
 
 `virtualenv -p python3 ./venv`
 
@@ -37,3 +53,16 @@ Course Project for CX4013 Distributed Systems at Nanyang Technological Universit
 
 - To run the server: `nfs-server [-h] -m {ALO,AMO} port path`
 
+## Commands for Server
+
+```positional arguments:
+  port                  Server port.
+  path                  Root directory for the server.
+
+optional arguments:
+  -h, --help            show this help message and exit
+  -m {ALO,AMO}, --mode {ALO,AMO}
+                        Invocation semantic.
+  -l LOSS_PROB, --loss-prob LOSS_PROB
+                        Probability of a response loss; default is 0.0
+```
