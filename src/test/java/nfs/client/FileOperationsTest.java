@@ -1,4 +1,5 @@
 package nfs.client;
+
 import org.junit.Before;
 import org.junit.Test;
 
@@ -6,9 +7,9 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.Optional;
 
-import static org.mockito.Mockito.*;
-
 import static org.junit.Assert.*;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 public class FileOperationsTest {
     private Proxy stub;
@@ -62,7 +63,7 @@ public class FileOperationsTest {
     @Test
     public void readInvalidOffsetValidCount() {
         String path = "file.txt";
-        byte[] expected = new byte[] {0xa, 0xb, 0xc};
+        byte[] expected = new byte[]{0xa, 0xb, 0xc};
         Optional<byte[]> opt_expected = Optional.of(expected);
 
         try {

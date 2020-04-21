@@ -6,9 +6,10 @@ import org.junit.Test;
 import java.io.IOException;
 import java.util.Optional;
 
-import static org.mockito.Mockito.*;
-
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertArrayEquals;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 public class CacheHandlerTest {
     private Proxy stub;
@@ -23,8 +24,8 @@ public class CacheHandlerTest {
     @Test
     public void get_file() {
         String path = "abc";
-        byte[] expected = new byte[] {0xa, 0xb, 0xc};
-        long[] expected_attr = new long[] {1,1};
+        byte[] expected = new byte[]{0xa, 0xb, 0xc};
+        long[] expected_attr = new long[]{1, 1};
         Optional<byte[]> opt_expected = Optional.of(expected);
         Optional<long[]> opt_attr = Optional.of(expected_attr);
 

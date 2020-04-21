@@ -1,13 +1,15 @@
 package nfs.client;
 
 import org.junit.Test;
-import static org.junit.Assert.*;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 
 public class CacheTest {
     Cache cache = new Cache();
 
     @Test
-    public void addEntry(){
+    public void addEntry() {
         String file_path = "textA.txt";
         byte[] content = "This is text A".getBytes();
         long t_mclient = 1000;
@@ -21,14 +23,14 @@ public class CacheTest {
     }
 
     @Test
-    public void getNonCachedFile(){
+    public void getNonCachedFile() {
         String file_path = "textB.txt";
         CacheEntry cached = cache.getFile(file_path);
         assertNull(cached);
     }
 
     @Test
-    public void replaceEntry(){
+    public void replaceEntry() {
         String file_path = "textA.txt";
         byte[] content = "This is text A".getBytes();
         byte[] new_content = "This is text C".getBytes();
@@ -44,7 +46,7 @@ public class CacheTest {
     }
 
     @Test
-    public void removeEntry(){
+    public void removeEntry() {
         String file_path = "textA.txt";
         byte[] content = "This is text A".getBytes();
         long t_mclient = 1000;

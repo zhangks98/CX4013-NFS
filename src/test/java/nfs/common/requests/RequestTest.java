@@ -6,7 +6,8 @@ import java.io.InvalidClassException;
 import java.io.InvalidObjectException;
 import java.nio.ByteBuffer;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertArrayEquals;
+import static org.junit.Assert.assertEquals;
 
 public class RequestTest {
 
