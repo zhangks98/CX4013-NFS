@@ -21,7 +21,8 @@ Course Project for CX4013 Distributed Systems at Nanyang Technological Universit
   - On Windows: `bin\nfs-client.bat [-hV] <address> <port>`
 
 ## Commands for Client
-```The following commands are available:     
+```
+The following commands are available:     
 <> - required arguments
 [] - optional arguments
 
@@ -55,7 +56,8 @@ Course Project for CX4013 Distributed Systems at Nanyang Technological Universit
 
 ## Commands for Server
 
-```positional arguments:
+```
+positional arguments:
   port                  Server port.
   path                  Root directory for the server.
 
