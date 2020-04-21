@@ -217,10 +217,12 @@ public class Proxy {
                     return Optional.empty();
                 }
             } catch (SocketTimeoutException e) {
+
                 if (++count == maxRecvAttempts) {
                     logger.warn(String.format("No response received after %d attempts.", maxRecvAttempts));
                     throw e;
                 }
+                logger.warn(String.format("No response received after %d attempt(s), retrying...", count));
             }
         }
     }
