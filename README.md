@@ -47,7 +47,7 @@ The following commands are available:
   - On Windows: `.\venv\Scripts\activate`
   
 - Install the package
-  - For production: `pip install .`
+  - For production: `pip install -U .`
   - For development: `pip install -e ".[dev,test]"`
 
 - To run the server: `nfs-server [-h] -m {ALO,AMO} [-l LOSS_PROB] port path`
