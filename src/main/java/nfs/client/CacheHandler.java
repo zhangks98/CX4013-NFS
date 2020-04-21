@@ -84,8 +84,9 @@ public class CacheHandler {
                     // File has not been modified on server. Set Tc to be now.
                     logger.info("File has not been modified on server. Updating Tc...");
                     long now = System.currentTimeMillis();
+                    // In principle, this is a not thread-safe operation. But cache entries are not shared with
+                    // other threads (update put a new instance of cache entry, so here it is safe to do this.
                     entry.setTc(now);
-                    cache.putEntry(filePath, entry);
                 }
             }
         }
