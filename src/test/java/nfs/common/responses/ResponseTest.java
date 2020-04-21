@@ -1,16 +1,16 @@
 package nfs.common.responses;
 
 import nfs.common.values.Int32;
-import org.junit.Test;
 import nfs.common.values.Int64;
 import nfs.common.values.Value;
+import org.junit.Test;
 
 import java.io.InvalidClassException;
 import java.io.InvalidObjectException;
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 
 public class ResponseTest {
 
