@@ -174,7 +174,7 @@ class ALOServicer:
         logger.debug("Arguments - path: {}".format(path))
         combined_path = os.path.join(self.root_dir, path)
         logger.debug("Combined path: {}".format(combined_path))
-        Path(path).touch()
+        Path(combined_path).touch()
         atime = int(os.path.getatime(combined_path) * 1000)
         # Returns access time (timestamp) to the client upon successful touch
         return [Int64(atime)]
