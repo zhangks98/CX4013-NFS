@@ -19,7 +19,7 @@ logger = logging.getLogger(__name__)
 
 def send_response(sock: socket.socket, addr: str, res: Response, loss_prob: int):
     if random.random() < loss_prob:
-        logger.info('Response to request #{} is lost'.format(res.get_req_id()))
+        logger.info('[LOST] Response to request #{} is lost'.format(res.get_req_id()))
         return
     sock.sendto(res.to_bytes(), addr)
 
