@@ -26,26 +26,31 @@ public class FileOperations {
      * @return an Optional object of bytes
      */
     public Optional<byte[]> read(String filePath, int offset, int count) throws IOException {
+        if (offset < 0) {
+            logger.warn("Invalid argument for read: offset < 0");
+            return Optional.empty();
+        }
+        if (count < 0) {
+            logger.warn("Invalid argument for read: count < 0");
+            return Optional.empty();
+        }
         filePath = Paths.get(filePath).normalize().toString();
         Optional<byte[]> optFile = cacheHandler.getFile(filePath);
-        byte[] slice = null;
-
-        if (optFile.isPresent()) {
-            byte[] file = optFile.get();
-            if (file.length == 0)
-                return Optional.empty();
-            if (offset < 0 || offset >= file.length) {
+        return optFile.map(file -> {
+            if (offset > file.length) {
                 logger.warn("Offset out of range");
-            } else if (file.length - offset < count) {
-                slice = Arrays.copyOfRange(file, offset, file.length);
+                return null;
+            }
+            byte[] slice;
+            if (file.length - offset < count) {
                 logger.warn("Count out of range, returning available bytes:");
-                System.out.println(new String(slice, StandardCharsets.UTF_8));
+                slice = Arrays.copyOfRange(file, offset, file.length);
             } else {
                 slice = Arrays.copyOfRange(file, offset, offset + count);
-                System.out.println(new String(slice, StandardCharsets.UTF_8));
             }
-        }
-        return Optional.ofNullable(slice);
+            System.out.println(new String(slice, StandardCharsets.UTF_8));
+            return slice;
+        });
     }
 
     /**
@@ -56,22 +61,21 @@ public class FileOperations {
      * @return an Optional object of bytes
      */
     public Optional<byte[]> read(String filePath, int offset) throws IOException {
+        if (offset < 0) {
+            logger.warn("Invalid argument for read: offset < 0");
+            return Optional.empty();
+        }
         filePath = Paths.get(filePath).normalize().toString();
         Optional<byte[]> optFile = cacheHandler.getFile(filePath);
-        byte[] slice = null;
-
-        if (optFile.isPresent()) {
-            byte[] file = optFile.get();
-            if (file.length == 0)
-                return Optional.empty();
-            if (offset < 0 || offset >= file.length) {
+        return optFile.map(file -> {
+            if (offset > file.length) {
                 logger.warn("Offset out of range");
-            } else {
-                slice = Arrays.copyOfRange(file, offset, file.length);
-                System.out.println(new String(slice, StandardCharsets.UTF_8));
+                return null;
             }
-        }
-        return Optional.ofNullable(slice);
+            byte[] slice = Arrays.copyOfRange(file, offset, file.length);
+            System.out.println(new String(slice, StandardCharsets.UTF_8));
+            return slice;
+        });
     }
 
     /**
@@ -83,6 +87,10 @@ public class FileOperations {
      * @throws IOException
      */
     public void insert(String filePath, int offset, byte[] data) throws IOException {
+        if (offset < 0) {
+            logger.warn("Invalid argument for insert: offset < 0");
+            return;
+        }
         filePath = Paths.get(filePath).normalize().toString();
         cacheHandler.insertFile(filePath, offset, data);
     }
