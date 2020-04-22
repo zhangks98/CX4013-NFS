@@ -8,19 +8,44 @@ Course Project for CX4013 Distributed Systems at Nanyang Technological Universit
 - Java >= 11
 - Python >= 3.6
 
-## How to build and run the Java Client
-- Assemble the executable
-  - On Linux/macOS: `./gradlew distZip`
-  - On Windows: `gradlew.bat distZip`
+## Installation Instructions
+See https://github.com/zhangks98/CX4013-NFS/releases
 
-- Go to "build/distributions" folder and unzip the "nfs-client-1.0.zip" to a desired location.
+## Usage
+### Server
+```
+usage: nfs-server [-h] -m {ALO,AMO} [-l LOSS_PROB] port path
 
-- To run the client:
-  - Change to the directory: `cd nfs-client-1.0`
-  - On Linux/macOS: `bin/nfs-client [-hV] [-f=<freshInterval>] [-l=<lossProb>] <address> <port>`
-  - On Windows: `bin\nfs-client.bat [-hV] [-f=<freshInterval>] [-l=<lossProb>] <address> <port>`
+Server for Remote File Access
 
-## Commands for Client
+positional arguments:
+  port                  Server port.
+  path                  Root directory for the server.
+
+optional arguments:
+  -h, --help            show this help message and exit
+  -m {ALO,AMO}, --mode {ALO,AMO}
+                        Invocation semantic.
+  -l LOSS_PROB, --loss-prob LOSS_PROB
+                        Probability of a response loss; default is 0.0
+```
+
+### Client
+```
+Usage: nfs-client [-hV] [-f=<freshInterval>] [-l=<lossProb>] <address> <port>
+The client for remote file access.
+      <address>   The address of the file server.
+      <port>      The port of the file server.
+  -f, --fresh-interval=<freshInterval>
+                  Freshness interval (in ms) of the client cache. Default
+                    value: 15000
+  -h, --help      Show this help message and exit.
+  -l, --loss-prob=<lossProb>
+                  Probability of a request loss. Default value: 0
+  -V, --version   Print version information and exit.
+```
+
+### Commands for Client
 ```
 The following commands are available:     
 <> - required arguments
@@ -36,8 +61,21 @@ The following commands are available:
 | exit                                               |
 ```
 
+## Build Instructions
+### How to build and run the Java Client
+- Assemble the executable
+  - On Linux/macOS: `./gradlew distZip`
+  - On Windows: `gradlew.bat distZip`
 
-## How to build and run the Python Server
+- Go to "build/distributions" folder and unzip the "nfs-client-1.0.zip" to a desired location.
+
+- To run the client:
+  - Change to the directory: `cd nfs-client-1.0`
+  - On Linux/macOS: `bin/nfs-client [-hV] [-f=<freshInterval>] [-l=<lossProb>] <address> <port>`
+  - On Windows: `bin\nfs-client.bat [-hV] [-f=<freshInterval>] [-l=<lossProb>] <address> <port>
+
+
+### How to build and run the Python Server
 - Go to the "python" directory: `cd python`
 
 - Create a Python (>=3.6) [virtual environment](https://virtualenv.pypa.io/en/latest): `virtualenv -p python3 ./venv`
@@ -51,18 +89,3 @@ The following commands are available:
   - For development: `pip install -e ".[dev,test]"`
 
 - To run the server: `nfs-server [-h] -m {ALO,AMO} [-l LOSS_PROB] port path`
-
-## Commands for Server
-
-```
-positional arguments:
-  port                  Server port.
-  path                  Root directory for the server.
-
-optional arguments:
-  -h, --help            show this help message and exit
-  -m {ALO,AMO}, --mode {ALO,AMO}
-                        Invocation semantic.
-  -l LOSS_PROB, --loss-prob LOSS_PROB
-                        Probability of a response loss; default is 0.0
-```

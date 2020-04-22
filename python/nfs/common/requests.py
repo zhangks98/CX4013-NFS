@@ -5,51 +5,20 @@ from nfs.common.serialize import BUF_SIZE, ByteBuffer
 from nfs.common.values import Bytes, Int64, Str, Value
 
 
-@unique
-class RequestName(bytes, Enum):
-    def __new__(cls, value, num_params, req_cls):
-        """
-        The constructor for a RequestName Enum.
-
-        Args:
-            value: The numeric tag for the request name.
-            num_params: The number of parameters for the request.
-            req_cls: The constructor for the request, used for deserializing.
-        """
-        obj = bytes.__new__(cls, [value])
-        obj._value_ = value
-        obj.num_params = num_params
-        obj.req_cls = req_cls
-        return obj
-
-    # Pass the constructor as an anonymous function to avoid circular dependency.
-    EMPTY = (0, 0, lambda id: EmptyRequest(id))
-    READ = (1, 1, lambda id: ReadRequest(id))
-    INSERT = (2, 3, lambda id: InsertRequest(id))
-    GET_ATTR = (3, 1, lambda id: GetAttrRequest(id))
-    LIST_DIR = (4, 1, lambda id: ListDirRequest(id))
-    TOUCH = (5, 1, lambda id: TouchRequest(id))
-    REGISTER = (6, 2, lambda id: RegisterRequest(id))
-    APPEND = (7, 2, lambda id: AppendRequest(id))
-
-    # FileUpdatedCallback does not construct from parser.
-    FILE_UPDATED = (8, 3, None)
-
-
 class Request():
-    def __init__(self, id: int, name: RequestName):
+    def __init__(self, id: int, name: 'RequestName'):
         """
         Server only constructs request from the parser,
         except for FileUpdatedCallback
         """
         self.req_id: int = id
-        self.name: RequestName = name
+        self.name: 'RequestName' = name
         self.__params: List[Value] = []
 
     def get_id(self) -> int:
         return self.req_id
 
-    def get_name(self) -> RequestName:
+    def get_name(self) -> 'RequestName':
         return self.name
 
     def add_param(self, val):
@@ -188,3 +157,33 @@ class FileUpdatedCallback(Request):
 
     def get_data(self) -> bytes:
         return self.get_param(2).get_val()
+
+
+@unique
+class RequestName(bytes, Enum):
+    def __new__(cls, value, num_params, req_cls):
+        """
+        The constructor for a RequestName Enum.
+
+        Args:
+            value: The numeric tag for the request name.
+            num_params: The number of parameters for the request.
+            req_cls: The constructor for the request, used for deserializing.
+        """
+        obj = bytes.__new__(cls, [value])
+        obj._value_ = value
+        obj.num_params = num_params
+        obj.req_cls = req_cls
+        return obj
+
+    EMPTY = (0, 0, EmptyRequest)
+    READ = (1, 1, ReadRequest)
+    INSERT = (2, 3, InsertRequest)
+    GET_ATTR = (3, 1, GetAttrRequest)
+    LIST_DIR = (4, 1, ListDirRequest)
+    TOUCH = (5, 1, TouchRequest)
+    REGISTER = (6, 2, RegisterRequest)
+    APPEND = (7, 2, AppendRequest)
+
+    # FileUpdatedCallback does not construct from parser.
+    FILE_UPDATED = (8, 3, None)
