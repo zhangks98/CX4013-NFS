@@ -8,8 +8,8 @@ import java.util.Arrays;
 import java.util.Optional;
 
 import static org.junit.Assert.*;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.never;
 
 public class FileOperationsTest {
     private Proxy stub;
@@ -24,56 +24,76 @@ public class FileOperationsTest {
     }
 
     @Test
-    public void readValidOffsetValidCount() {
+    public void readEmptyFile() throws IOException {
+        String path = "file.txt";
+        byte[] expected = new byte[]{};
+        Optional<byte[]> opt_expected = Optional.of(expected);
+
+        when(stub.requestFile(path)).thenReturn(opt_expected);
+        Optional<byte[]> actual = fileOps.read(path, 0, expected.length);
+
+        assertTrue(actual.isPresent());
+        assertArrayEquals(expected, actual.get());
+    }
+
+    @Test
+    public void readNegativeOffset() throws IOException {
+        String path = "file.txt";
+
+        Optional<byte[]> actual = fileOps.read(path, -1, 1);
+
+        assertFalse(actual.isPresent());
+        verify(stub, never()).requestFile(path);
+    }
+
+    @Test
+    public void readOutOfRangeOffset() throws IOException {
         String path = "file.txt";
         byte[] expected = "abc".getBytes();
         Optional<byte[]> opt_expected = Optional.of(expected);
 
-        try {
-            when(stub.requestFile(path)).thenReturn(opt_expected);
-            Optional<byte[]> actual = fileOps.read(path, 0, expected.length);
+        when(stub.requestFile(path)).thenReturn(opt_expected);
+        Optional<byte[]> actual = fileOps.read(path, expected.length + 1, 1);
 
-            assertTrue(actual.isPresent());
-            assertArrayEquals(expected, actual.get());
-
-        } catch (IOException e) {
-            System.out.println(e);
-        }
+        assertFalse(actual.isPresent());
     }
 
     @Test
-    public void readValidOffsetInvalidCount() {
+    public void readValidOffsetValidCount() throws IOException {
         String path = "file.txt";
         byte[] expected = "abc".getBytes();
         Optional<byte[]> opt_expected = Optional.of(expected);
 
-        try {
-            when(stub.requestFile(path)).thenReturn(opt_expected);
-            Optional<byte[]> actual = fileOps.read(path, 1, expected.length + 1);
+        when(stub.requestFile(path)).thenReturn(opt_expected);
+        Optional<byte[]> actual = fileOps.read(path, 0, expected.length);
 
-            assertTrue(actual.isPresent());
-            assertArrayEquals(Arrays.copyOfRange(expected, 1, expected.length), actual.get());
-
-        } catch (Exception e) {
-            System.out.println(e);
-        }
-
+        assertTrue(actual.isPresent());
+        assertArrayEquals(expected, actual.get());
     }
 
     @Test
-    public void readInvalidOffsetValidCount() {
+    public void readValidOffsetInvalidCount() throws IOException {
         String path = "file.txt";
-        byte[] expected = new byte[]{0xa, 0xb, 0xc};
+        byte[] expected = "abc".getBytes();
         Optional<byte[]> opt_expected = Optional.of(expected);
 
-        try {
-            when(stub.requestFile(path)).thenReturn(opt_expected);
-            Optional<byte[]> actual = fileOps.read(path, expected.length, 1);
 
-            assertFalse(actual.isPresent());
+        when(stub.requestFile(path)).thenReturn(opt_expected);
+        Optional<byte[]> actual = fileOps.read(path, 1, expected.length + 1);
 
-        } catch (IOException e) {
-            System.out.println(e);
-        }
+        assertTrue(actual.isPresent());
+        assertArrayEquals(Arrays.copyOfRange(expected, 1, expected.length), actual.get());
+    }
+
+    @Test
+    public void readInvalidOffsetInvalidCount() throws IOException {
+        String path = "file.txt";
+        byte[] expected = "abc".getBytes();
+        Optional<byte[]> opt_expected = Optional.of(expected);
+
+        when(stub.requestFile(path)).thenReturn(opt_expected);
+        Optional<byte[]> actual = fileOps.read(path, expected.length + 1, -1);
+
+        assertFalse(actual.isPresent());
     }
 }
