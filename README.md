@@ -1,5 +1,7 @@
 # System for Remote File Access
-Course Project for CX4013 Distributed Systems at Nanyang Technological University, Singapore
+Course Project for CX4013 Distributed Systems at Nanyang Technological University, Singapore.
+
+Video Demo: https://youtu.be/UROoUfE-oF0
 
 ![Java Client](https://github.com/zhangks98/CX4013-NFS/workflows/Java%20Client/badge.svg)
 ![Python Server](https://github.com/zhangks98/CX4013-NFS/workflows/Python%20Server/badge.svg)
