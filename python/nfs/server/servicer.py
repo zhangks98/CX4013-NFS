@@ -23,7 +23,7 @@ class ALOServicer:
         # file_path --> Dict<client_addr, { time_of_register, monitor_interval }>
         self.file_subscribers = {}
 
-    def get_current_timestamp_second(self):
+    def get_current_timestamp_millisecond(self):
         return int(time.time() * 1000)
 
     def update_file_subscribers(self, file_path: str, client_addr: str, time_of_register: int, monitor_interval: int):
@@ -62,7 +62,7 @@ class ALOServicer:
         subscriber_map: dict = self.file_subscribers[path_to_file]
         for client_addr in subscriber_map.copy():
             registry_info: dict = subscriber_map[client_addr]
-            if self.get_current_timestamp_second() > registry_info["time_of_register"] + registry_info[
+            if self.get_current_timestamp_millisecond() > registry_info["time_of_register"] + registry_info[
                     "monitor_interval"]:
                 # Expired, remove it
                 del subscriber_map[client_addr]
@@ -187,7 +187,7 @@ class ALOServicer:
         path = req.get_path()
         combined_path = os.path.join(self.root_dir, path)
         self.validate_file_path(path, combined_path)
-        current_timestamp = self.get_current_timestamp_second()
+        current_timestamp = self.get_current_timestamp_millisecond()
         self.update_file_subscribers(file_path=path, client_addr=client_addr,
                                      time_of_register=current_timestamp, monitor_interval=monitor_interval)
         return []
@@ -196,16 +196,16 @@ class ALOServicer:
 class AMOServicer(ALOServicer):
     def __init__(self, root_dir, sock):
         super().__init__(root_dir, sock)
-        self.historyMap = {}
+        self.history_map = {}
 
     def create_identifier(self, req: Request, addr: any) -> str:
         return str(req.get_id()) + ":" + str(addr)
 
     def _is_duplicate_request(self, req: Request, addr: any) -> Optional[List[Value]]:
         identifier = self.create_identifier(req, addr)
-        if identifier not in self.historyMap:
+        if identifier not in self.history_map:
             return None
-        return self.historyMap[identifier]
+        return self.history_map[identifier]
 
     def handle(self, req, addr) -> List[Value]:
         stored_res = self._is_duplicate_request(req, addr)
@@ -215,5 +215,5 @@ class AMOServicer(ALOServicer):
         res = super().handle(req, addr)
         identifier = self.create_identifier(req, addr)
         # Save it to history
-        self.historyMap[identifier] = res
+        self.history_map[identifier] = res
         return res
