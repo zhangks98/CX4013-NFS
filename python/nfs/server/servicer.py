@@ -73,7 +73,8 @@ class ALOServicer:
                 try:
                     self.sock.sendto(callback_req.to_bytes(), client_addr)
                 except OSError as e:
-                    logger.warning("Error sending callback to %s: %s", client_addr, e)
+                    logger.warning(
+                        "Error sending callback to %s: %s", client_addr, e)
 
     def handle(self, req, addr) -> List[Value]:
         req_name = req.get_name()
@@ -112,6 +113,8 @@ class ALOServicer:
         data = req.get_data()
         logger.debug(
             "Arguments - path: {}, offset: {}, data: {}".format(path, offset, data))
+        if offset < 0:
+            raise BadRequestError("offset < 0")
         combined_path = os.path.join(self.root_dir, path)
         self.validate_file_path(path, combined_path)
         # If offset exceeds the file length, returns error
@@ -184,6 +187,8 @@ class ALOServicer:
 
     def handle_register(self, req: RegisterRequest, client_addr: str):
         monitor_interval = req.get_monitor_interval()
+        if monitor_interval < 0:
+            raise BadRequestError("monitor_interval < 0")
         path = req.get_path()
         combined_path = os.path.join(self.root_dir, path)
         self.validate_file_path(path, combined_path)

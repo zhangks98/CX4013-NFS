@@ -9,7 +9,6 @@ import java.util.Optional;
 
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
-import static org.mockito.Mockito.never;
 
 public class FileOperationsTest {
     private Proxy stub;
