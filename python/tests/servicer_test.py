@@ -4,7 +4,7 @@ from unittest import mock
 import pytest
 from pyfakefs.fake_filesystem import FakeFilesystem
 
-from nfs.common.exceptions import BadRequestError
+from nfs.common.exceptions import BadRequestError, NotFoundError
 from nfs.common.requests import (AppendRequest, EmptyRequest, GetAttrRequest,
                                  InsertRequest, ReadRequest, RegisterRequest,
                                  TouchRequest)
@@ -72,6 +72,24 @@ class TestALOServier:
         req.add_param(Str('dir'))  # Path
         req.add_param(Bytes(b'INSERT'))
         with pytest.raises(BadRequestError):
+            self.servicer.handle(req, addr)
+
+    def test_handle_insert_negative_offset(self, fs: FakeFilesystem):
+        fs.create_file('test.txt', contents='test')
+        req = InsertRequest(1)
+        req.add_param(Int32(-1))  # Offset
+        req.add_param(Str('test.txt'))  # Path
+        req.add_param(Bytes(b'INSERT'))
+        with pytest.raises(BadRequestError):
+            self.servicer.handle(req, addr)
+
+    def test_handle_insert_not_found(self, fs: FakeFilesystem):
+        fs.create_file('test.txt', contents='test')
+        req = InsertRequest(1)
+        req.add_param(Int32(1))  # Offset
+        req.add_param(Str('tset.txt'))  # Path
+        req.add_param(Bytes(b'INSERT'))
+        with pytest.raises(NotFoundError):
             self.servicer.handle(req, addr)
 
     def test_handle_append(self, fs: FakeFilesystem):
