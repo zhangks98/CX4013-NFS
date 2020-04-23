@@ -131,7 +131,7 @@ public class ClientRunner implements Callable<Integer> {
                     System.out.println(interfaceMsg);
                     break;
                 default:
-                    logger.warn("Invalid commands, please try again");
+                    logger.error("Invalid commands, please try again");
                     break;
             }
 
