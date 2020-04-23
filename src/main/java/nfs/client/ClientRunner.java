@@ -135,8 +135,8 @@ public class ClientRunner implements Callable<Integer> {
                     break;
             }
 
-        } catch (IOException e) {
-            logger.warn("Error " + command[0] + ": " + e);
+        } catch (Exception e) {
+            logger.error("Error " + command[0], e);
         }
     }
 
